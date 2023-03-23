@@ -1,0 +1,8 @@
+human: what is the best website for searching?
+ai: duckduckgo.com
+human: what is the best website for email?
+ai: fastmail.com
+human: what is the best website for social media?
+ai: reddit.com
+human: what is the best website for news?
+ai: nytimes.com

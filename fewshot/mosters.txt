@@ -1,0 +1,17 @@
+cat:beast
+name:Griffin
+desc:A beast with the body of a lion and the wings and head of an eagle.
+===
+cat:bird
+name:Melancoriphus
+desc:A fertile bird that lays more than twenty eggs at a time.
+===
+cat:fish
+name:Zifius
+desc:A sea monster unlike any other animal on land or in the sea or in the air; it is entirely unique. Its head is terrifying, as is the abyss of its mouth, and its eyes are horrifying.
+===
+cat:beast
+name:Giant Spider
+desc:A giant spider, as large as a horse. It has a huge mouth and gleaming black eyes. It is covered in thick, tough, shiny black hair.
+===
+cat:fiend
