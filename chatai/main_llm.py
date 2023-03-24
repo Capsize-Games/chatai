@@ -1,16 +1,13 @@
-import gc
 import os
 import pickle
-import queue
-import sys
 import random
 from PyQt6 import uic
 from PyQt6.QtCore import pyqtSignal, pyqtSlot
-from PyQt6.QtWidgets import QApplication, QFileDialog, QMainWindow
-from PyQt6.QtGui import QIcon, QGuiApplication
-from chatai.settings import TEXT_MODELS
-from chatai.conversation import Conversation
-from chatai.settings_manager import SettingsManager
+from PyQt6.QtWidgets import QFileDialog, QMainWindow
+from PyQt6.QtGui import QGuiApplication
+from aiengine.pyqt_offline_client import OfflineClient
+from aiengine.settings import TEXT_MODELS
+from settings_manager import SettingsManager
 from aiengine.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
 from settings import VERSION
 
@@ -71,18 +68,15 @@ class LLMWindow(QMainWindow):
         pass
 
     def initialize_offline_client(self):
-        # self.client = OfflineClient(
-        #     app=self,
-        #     tqdm_var=self.tqdm_var,
-        #     image_var=None,
-        #     error_var=self.error_var,
-        #     message_var=self.message_var,
-        # )
-        # print("initializing_offline_client ", self.message_var)
-        # self.parent.client._tqdm_var = self.tqdm_var
-        # self.parent.client._error_var = self.error_var
-        # self.parent.client._message_var = self.message_var
-        pass
+        self.tqdm_var = TQDMVar()
+        self.message_var = MessageHandlerVar()
+        self.error_var = ErrorHandlerVar()
+        self.client = OfflineClient(
+            app=self,
+            tqdm_var=self.tqdm_var,
+            message_var=self.message_var,
+            error_var=self.error_var,
+        )
 
     def handle_generate(self):
         self.start_progress_bar()
@@ -134,6 +128,8 @@ class LLMWindow(QMainWindow):
         self.client = kwargs.pop("client")
         self.parent = kwargs.pop("parent")
         super().__init__(*args, **kwargs)
+        if self.client is None:
+            self.initialize_offline_client()
         self.client.tqdm_var.my_signal.connect(self.tqdm_callback)
         self.client.message_var.my_signal.connect(self.message_handler)
         self.client.error_var.my_signal.connect(self.error_handler)
@@ -144,7 +140,6 @@ class LLMWindow(QMainWindow):
         self.load_template()
         self.center()
         self.ui.show()
-        self.initialize_offline_client()
         self.ui.closeEvent = self.handle_quit
         self.initialize_form()
         # self.exec()

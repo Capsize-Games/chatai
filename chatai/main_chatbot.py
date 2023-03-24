@@ -4,7 +4,7 @@ import queue
 import random
 from PyQt6 import uic
 from PyQt6.QtCore import pyqtSlot
-from PyQt6.QtWidgets import QFileDialog
+from PyQt6.QtWidgets import QFileDialog, QApplication
 from conversation import Conversation
 from main_llm import LLMWindow
 from settings import VERSION
@@ -101,6 +101,9 @@ class ChatbotWindow(LLMWindow):
 
         super().__init__(*args, **kwargs)
 
+    def tqdm_callback(self, *args, **kwargs):
+        pass
+
     def initialize_form(self):
         self.ui.send_button.clicked.connect(self.chatbot_generate)
         self.conversation = Conversation(self)
@@ -143,13 +146,13 @@ class ChatbotWindow(LLMWindow):
 
     def advanced_settings(self):
         HERE = os.path.dirname(os.path.abspath(__file__))
-        advanced_settings_window = uic.loadUi(os.path.join(HERE, "pyqt/advanced_settings.ui"))
+        advanced_settings_window = uic.loadUi(os.path.join(HERE, "pyqt/llmrunner/advanced_settings.ui"))
         advanced_settings_window.exec()
 
     def about(self):
         # display pyqt/about.ui popup window
         HERE = os.path.dirname(os.path.abspath(__file__))
-        about_window = uic.loadUi(os.path.join(HERE, "pyqt/about.ui"))
+        about_window = uic.loadUi(os.path.join(HERE, "pyqt/llmrunner/about.ui"))
         about_window.setWindowTitle(f"About Chat AI")
         about_window.title.setText(f"Chat AI v{VERSION}")
         about_window.exec()
@@ -275,4 +278,14 @@ class ChatbotWindow(LLMWindow):
 
 
 if __name__ == '__main__':
-    ChatbotWindow([])
+    if __name__ == '__main__':
+        class Runner(QApplication):
+            def __init__(self, args):
+                super().__init__(args)
+                self.main_window = ChatbotWindow(client=None, parent=self)
+                self.exec()
+
+            def show(self):
+                pass
+
+        Runner([])
