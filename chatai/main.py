@@ -6,6 +6,7 @@ from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtWidgets import QApplication
 
 from aiengine.pyqt_offline_client import OfflineClient
+from llmrunner import LLMRunner
 from main_chatbot import ChatbotWindow
 from main_llm import MainWindow
 from aiengine.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
@@ -44,6 +45,7 @@ class Launcher(QApplication):
             tqdm_var=self.tqdm_var,
             message_var=self.message_var,
             error_var=self.error_var,
+            runners=[LLMRunner]
         )
         self.load_template()
         self.exec()
