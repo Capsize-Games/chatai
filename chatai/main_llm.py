@@ -1,3 +1,4 @@
+import json
 import os
 import pickle
 import random
@@ -270,15 +271,14 @@ class MainWindow(LLMWindow):
     def handle_load(self):
         # display a load dialogue
         filename, _ = QFileDialog.getOpenFileName(
-            None, "Load File", "", "TXTRunner files (*.txtrunner)"
+            None, "Load File", "", "JSON files (*.json)"
         )
         if filename:
-            # load the file - if it is a txtrunner file then we must load a pickle with the
             # current values
-            if filename.endswith(".txtrunner"):
+            if filename.lower().endswith(".json"):
                 with open(filename, "rb") as f:
                     # load properties
-                    properties = pickle.load(f)
+                    properties = json.load(f)
                     self.ui.max_length_spinbox.setValue(properties["max_length"])
                     self.ui.min_length_spinbox.setValue(properties["min_length"])
                     self.ui.num_beams_spinbox.setValue(properties["num_beams"])
@@ -296,21 +296,19 @@ class MainWindow(LLMWindow):
     def handle_save(self):
         # display a save dialogue for .txtrunner and .llmrunner files
         filename, _ = QFileDialog.getSaveFileName(
-            None, "Save File", "", "TXTRunner files (*.txtrunner)"
+            None, "Save File", "", "JSON files (*.json)"
         )
         if filename:
-            # save the file - if it is a txtrunner file then we must save a pickle with the
-            # current values
-            if filename.endswith(".txtrunner"):
-                with open(filename, "wb") as f:
-                    # save properties
-                    properties = self.prep_properties()
-                    properties["seed"] = self.ui.seed.toPlainText()
-                    # set prompt and few shot prompt
-                    properties["prompt"] = self.ui.prompt.toPlainText()
-                    # set generated text
-                    properties["generated_text"] = self.ui.generated_text.toPlainText()
-                    pickle.dump(properties, f)
+            if not filename.lower().endswith(".json"):
+                filename += ".json"
+            with open(filename, "w") as f:
+                # save properties
+                properties = self.prep_properties()
+                properties["seed"] = self.ui.seed.toPlainText()
+                # set prompt and few shot prompt
+                # set generated text
+                properties["generated_text"] = self.ui.generated_text.toPlainText()
+                json.dump(properties, f)
 
     def prep_properties(self):
         num_beams = self.ui.num_beams_spinbox.value()
