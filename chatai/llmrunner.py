@@ -246,6 +246,12 @@ class LLMRunner(BaseRunner):
         prompt = conversation.format_prompt(botname, username, mood, user_sentiment)
         return prompt
 
+    def generate_action_prompt(self, user_input, **kwargs):
+        botname = kwargs.get("botname")
+        username = kwargs.get("username")
+        conversation = kwargs.get("conversation")
+        return conversation.format_action_prompt(botname, username, user_input)
+
     def generate(
         self,
         prompt=None,
@@ -319,6 +325,8 @@ class LLMRunner(BaseRunner):
                 temperature = 1.0
                 skip_special_tokens = False
             elif type == "do_action":
+                prompt = self.generate_action_prompt(user_input, properties=properties, botname=botname,
+                                                   username=username, conversation=conversation)
                 top_k = 20
                 top_p = 0.9
                 num_beams = 3
@@ -328,7 +336,6 @@ class LLMRunner(BaseRunner):
                 min_length = 0
                 temperature = 1.0
                 skip_special_tokens = False
-
             elif type == "generate_characters":
                 self.generate_character_prompt(**properties)
                 return

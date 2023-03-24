@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QApplication
 
 from aiengine.pyqt_offline_client import OfflineClient
 from llmrunner import LLMRunner
-from main_chatbot import ChatbotWindow
+from chatbot import ChatbotWindow
 from main_llm import MainWindow
 from aiengine.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
 
