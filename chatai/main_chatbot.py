@@ -116,11 +116,9 @@ class ChatbotWindow(LLMWindow):
         self.ui.prompt.setTabOrder(self.ui.prompt, self.ui.send_button)
 
         # set dropdown menu values
-        actions = ["chat", "act"]
+        actions = ["chat", "action"]
         self.ui.action.addItems(actions)
         self.ui.action.setCurrentIndex(0)
-        # delete self.ui.action from the widget
-        self.ui.action.deleteLater()
 
         self.ui.username.setFocus()
         self.ui.prompt.returnPressed.connect(self.chatbot_generate)
@@ -233,9 +231,12 @@ class ChatbotWindow(LLMWindow):
         self.ui.prompt.setText("")
         properties = self.prep_properties()
         # get current action and set it on properties
+        llm_action = self.ui.action.currentText()
+        if llm_action == "action":
+            llm_action = "do_action"
         self.client.message = {
             "action": "llm",
-            "type": "chat",
+            "type": llm_action,
             "data": {
                 "user_input": user_input,
                 "prompt": None,
