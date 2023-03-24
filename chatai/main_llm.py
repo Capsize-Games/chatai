@@ -8,6 +8,7 @@ from PyQt6.QtWidgets import QFileDialog, QMainWindow
 from PyQt6.QtGui import QGuiApplication
 from aiengine.pyqt_offline_client import OfflineClient
 from aiengine.settings import TEXT_MODELS
+from llmrunner import LLMRunner
 from settings_manager import SettingsManager
 from aiengine.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
 from settings import VERSION
@@ -77,6 +78,7 @@ class LLMWindow(QMainWindow):
             tqdm_var=self.tqdm_var,
             message_var=self.message_var,
             error_var=self.error_var,
+            runners=[LLMRunner]
         )
 
     def handle_generate(self):
