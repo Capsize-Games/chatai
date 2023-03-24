@@ -63,5 +63,8 @@ class Conversation:
     def format_conversation(self, user_name):
         pass
 
+    def format_action_prompt(self, botname, username, action):
+        return f"Context: {botname} and {username} are having a conversation. suddenly {username} {action}. What does {botname} do? "
+
     def get_bot_mood_prompt(self, botname, username):
         return f"Context: {botname} and {username} are having a conversation. {self.converation_summary}\n\n{self.dialogue}\n\n{botname}'s mood is "
