@@ -30,4 +30,4 @@ TEXT_MODELS = {
         "tokenizer": "AutoTokenizer",
     }
 }
-VERSION = "1.0.0"
+VERSION = "1.0.2"

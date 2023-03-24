@@ -5,9 +5,9 @@ import random
 from PyQt6 import uic
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtWidgets import QFileDialog
-from llmrunner.conversation import Conversation
+from conversation import Conversation
 from main_llm import LLMWindow
-from settings import CHAT_AI_VERSION
+from settings import VERSION
 
 
 class ChatbotWindow(LLMWindow):
@@ -133,7 +133,7 @@ class ChatbotWindow(LLMWindow):
         self.ui.actionQuit.triggered.connect(self.handle_quit)
         self.ui.actionAdvanced.triggered.connect(self.advanced_settings)
 
-        self.ui.setWindowTitle(f"Chat AI v{CHAT_AI_VERSION}")
+        self.ui.setWindowTitle(f"Chat AI v{VERSION}")
 
         self.ui.generated_text.setReadOnly(True)
 
@@ -143,15 +143,15 @@ class ChatbotWindow(LLMWindow):
 
     def advanced_settings(self):
         HERE = os.path.dirname(os.path.abspath(__file__))
-        advanced_settings_window = uic.loadUi(os.path.join(HERE, "pyqt/llmrunner/advanced_settings.ui"))
+        advanced_settings_window = uic.loadUi(os.path.join(HERE, "pyqt/advanced_settings.ui"))
         advanced_settings_window.exec()
 
     def about(self):
         # display pyqt/about.ui popup window
         HERE = os.path.dirname(os.path.abspath(__file__))
-        about_window = uic.loadUi(os.path.join(HERE, "pyqt/llmrunner/about.ui"))
+        about_window = uic.loadUi(os.path.join(HERE, "pyqt/about.ui"))
         about_window.setWindowTitle(f"About Chat AI")
-        about_window.title.setText(f"Chat AI v{CHAT_AI_VERSION}")
+        about_window.title.setText(f"Chat AI v{VERSION}")
         about_window.exec()
 
     def new_conversation(self):

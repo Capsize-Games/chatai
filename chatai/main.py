@@ -5,10 +5,10 @@ from PyQt6 import uic
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtWidgets import QApplication
 
-from engine.pyqt_offline_client import OfflineClient
+from aiengine.pyqt_offline_client import OfflineClient
 from main_chatbot import ChatbotWindow
 from main_llm import MainWindow
-from qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
+from aiengine.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
 
 
 class Launcher(QApplication):
@@ -23,7 +23,7 @@ class Launcher(QApplication):
 
     def load_template(self):
         HERE = os.path.dirname(os.path.abspath(__file__))
-        self.ui = uic.loadUi(os.path.join(os.path.join(HERE, f"pyqt/llmrunner/home_window.ui")))
+        self.ui = uic.loadUi(os.path.join(os.path.join(HERE, f"pyqt/home_window.ui")))
         self.ui.chatbot_button.clicked.connect(lambda _val, client=self.client: self.launch_chatbot(client))
         self.ui.textedit_button.clicked.connect(lambda _val, client=self.client: self.launch_textedit(client))
         self.ui.actionQuit.triggered.connect(self.quit)

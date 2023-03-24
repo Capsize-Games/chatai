@@ -8,11 +8,11 @@ from PyQt6 import uic
 from PyQt6.QtCore import pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import QApplication, QFileDialog, QMainWindow
 from PyQt6.QtGui import QIcon, QGuiApplication
-from llmrunner.settings import TEXT_MODELS
-from llmrunner.conversation import Conversation
-from llmrunner.settings_manager import SettingsManager
-from qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
-from settings import CHAT_AI_VERSION
+from chatai.settings import TEXT_MODELS
+from chatai.conversation import Conversation
+from chatai.settings_manager import SettingsManager
+from aiengine.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
+from settings import VERSION
 
 
 class LLMWindow(QMainWindow):
@@ -157,7 +157,7 @@ class LLMWindow(QMainWindow):
 
     def load_template(self):
         HERE = os.path.dirname(os.path.abspath(__file__))
-        self.ui = uic.loadUi(os.path.join(os.path.join(HERE, f"pyqt/llmrunner/{self.template}.ui")))
+        self.ui = uic.loadUi(os.path.join(os.path.join(HERE, f"pyqt/{self.template}.ui")))
         # self.ui.setWindowIcon(QIcon('./assets/icon.png'))
 
     def tqdm_callback(self, *args, **kwargs):
@@ -253,7 +253,7 @@ class MainWindow(LLMWindow):
         # set default to settings_manager.settings.model_name
         self.ui.model_dropdown.setCurrentText(self.settings_manager.settings.model_name.get())
 
-        self.ui.setWindowTitle("Chat AI v{}".format(CHAT_AI_VERSION))
+        self.ui.setWindowTitle("Chat AI v{}".format(VERSION))
 
     def disable_generate_button(self):
         self.ui.generate_button.setEnabled(False)
