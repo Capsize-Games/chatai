@@ -533,7 +533,7 @@
                 <number>1</number>
                </property>
                <property name="maximum">
-                <number>10000</number>
+                <number>256</number>
                </property>
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
@@ -546,7 +546,7 @@
                 <number>1</number>
                </property>
                <property name="maximum">
-                <number>10000</number>
+                <number>256</number>
                </property>
               </widget>
              </item>
