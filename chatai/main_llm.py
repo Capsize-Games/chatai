@@ -259,7 +259,6 @@ class MainWindow(LLMWindow):
 
     def handle_new(self):
         # reset the form
-        self.ui.prompt.setPlainText("")
         self.ui.generated_text.setPlainText("")
         self.ui.seed.setPlainText(str(random.randint(0, 1000000)))
         self.set_form_defaults()
@@ -290,7 +289,6 @@ class MainWindow(LLMWindow):
                     self.ui.repetition_penalty_spinbox.setValue(properties["repetition_penalty"])
                     self.ui.length_penalty_spinbox.setValue(properties["length_penalty"])
                     self.ui.seed.setPlainText(properties["seed"])
-                    self.ui.prompt.setPlainText(properties["prompt"])
                     self.ui.generated_text.setPlainText(properties["generated_text"])
 
     def handle_save(self):
