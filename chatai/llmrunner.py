@@ -2,7 +2,6 @@ import gc
 import os
 import numpy as np
 import random
-import spacy
 import torch
 from aiengine.base_runner import BaseRunner
 from aiengine.settings import TEXT_MODELS as MODELS
@@ -68,14 +67,6 @@ class LLMRunner(BaseRunner):
         # Store the response and update the conversation history
         self.conversation_history[user_id] = {'text': conversation_text + user_query + response, 'vector': combined_vector}
         return response
-
-    def extract_named_entities(self, text):
-        nlp = spacy.load('en_core_web_sm')
-        doc = nlp(text)
-        entities = []
-        for ent in doc.ents:
-            entities.append((ent.text, ent.label_))
-        return entities
 
     @property
     def load_in_8bit(self):
