@@ -1,5 +1,8 @@
 import gc
 import os
+import threading
+import time
+
 import numpy as np
 import random
 import torch
@@ -88,6 +91,8 @@ class LLMRunner(BaseRunner):
         self.model_name = MODELS[self.current_model]["path"]
         self.model_class = MODELS[self.current_model]["class"]
         self.tokenizer_class = MODELS[self.current_model]["tokenizer"]
+        self.is_model_loading = False
+        threading.Thread(target=self.load_model, args=(self.model_name,)).start()
         # self.app.message_signal.emit("initialized")
 
     def set_seed(self, seed=None):
@@ -110,6 +115,7 @@ class LLMRunner(BaseRunner):
         gc.collect()
 
     def load_model(self, model_name, pipeline_type=None, offline=True):
+        self.is_model_loading = True
         if self.model_name == model_name and self.model and self.tokenizer:
             return
         local_files_only = offline
@@ -164,6 +170,7 @@ class LLMRunner(BaseRunner):
             print(e)
             if offline:
                 return self.load_model(model_name, pipeline_type, offline=False)
+        self.is_model_loading = False
 
     @property
     def device(self):
@@ -320,7 +327,10 @@ class LLMRunner(BaseRunner):
             "use_cache": use_cache,
         }
         model_name = MODELS[model]["path"]
-        self.load_model(model_name)
+        while self.is_model_loading:
+            time.sleep(0.1)
+        if not self.model or self.model_name != model_name:
+            self.load_model(model_name)
         if not self.tokenizer:
             print("failed to load model")
             return
