@@ -1,10 +1,11 @@
+import settings
+import logging
+logging.getLogger('h5py._conv').setLevel(settings.LOG_LEVEL)
+logging.getLogger('tensorflow').setLevel(settings.LOG_LEVEL)
 import os
-from time import sleep
-
 from PyQt6 import uic
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtWidgets import QApplication
-
 from aiengine.pyqt_offline_client import OfflineClient
 from llmrunner import LLMRunner
 from chatbot import ChatbotWindow
@@ -37,6 +38,9 @@ class Launcher(QApplication):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # silent h5py._conv logging
+        uic.properties.logger.setLevel(settings.LOG_LEVEL)
+        uic.uiparser.logger.setLevel(settings.LOG_LEVEL)
         self.tqdm_var = TQDMVar()
         self.message_var = MessageHandlerVar()
         self.error_var = ErrorHandlerVar()
@@ -45,7 +49,8 @@ class Launcher(QApplication):
             tqdm_var=self.tqdm_var,
             message_var=self.message_var,
             error_var=self.error_var,
-            runners=[LLMRunner]
+            runners=[LLMRunner],
+            log_level=settings.LOG_LEVEL
         )
         self.load_template()
         self.exec()

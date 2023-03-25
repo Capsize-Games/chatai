@@ -11,6 +11,9 @@ from aiengine.logger import logger
 os.environ["DISABLE_TELEMETRY"] = "1"
 os.environ["HF_HUB_OFFLINE"] = "0"
 os.environ["TRANSFORMERS_OFFLINE"] = "0"
+os.environ["BITSANDBYTES_NOWELCOME"] = "1"
+import settings
+logger.set_level(settings.LOG_LEVEL)
 
 
 class LLMRunner(BaseRunner):
@@ -139,7 +142,6 @@ class LLMRunner(BaseRunner):
         self.clear_gpu_cache()
         try:
             tokenizer_class = class_names[self.tokenizer_class]
-            print("pipeline_type = ", pipeline_type, "")
             if pipeline_type == "summarize":
                 self.model = pipeline(
                     "summarization",
@@ -152,7 +154,6 @@ class LLMRunner(BaseRunner):
                     if model_name == MODELS[model]["path"]:
                         self.model_class = MODELS[model]["class"]
                 model_class = class_names[self.model_class]
-                print("Loading model, local_files_only = ", local_files_only, "")
                 self.model = model_class.from_pretrained(
                     model_name,
                     local_files_only=local_files_only,
@@ -171,7 +172,6 @@ class LLMRunner(BaseRunner):
         except OSError as e:
             print(e)
             if offline:
-                print("Trying loading again this time offline = false")
                 return self.load_model(model_name, pipeline_type, offline=False)
 
     @property
