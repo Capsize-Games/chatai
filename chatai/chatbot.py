@@ -26,20 +26,25 @@ class ChatbotWindow(LLMWindow):
             response = message["response"]
             response = response.replace("<pad>", "")
             response = response.replace("<unk>", "")
-            incomplete = False
-            if "</s>" not in response:
-                # remove all tokens after </s> and </s> itself
-                incomplete = True
+            formatted_response = ""
+            special_character = "</s>"
+            if type == "do_action":
+                self.ui.generated_text.appendPlainText(response)
             else:
-                response = response[: response.find("</s>")]
-            response = response.strip()
+                incomplete = False
+                if special_character not in response:
+                    # remove all tokens after </s> and </s> itself
+                    incomplete = True
+                else:
+                    response = response[: response.find(special_character)]
+                response = response.strip()
 
-            if not incomplete:
-                formatted_response = f"{botname} says: \"{response}\"\n"
-                self.conversation.add_message(botname, response)
-                self.ui.generated_text.appendPlainText(formatted_response)
-            else:
-                self.chatbot_generate()
+                if not incomplete:
+                    formatted_response = f"{botname} says: \"{response}\"\n"
+                    self.conversation.add_message(botname, response)
+                    self.ui.generated_text.appendPlainText(formatted_response)
+                else:
+                    self.chatbot_generate()
 
         self.stop_progress_bar()
         self.enable_buttons()
@@ -144,13 +149,13 @@ class ChatbotWindow(LLMWindow):
 
     def advanced_settings(self):
         HERE = os.path.dirname(os.path.abspath(__file__))
-        advanced_settings_window = uic.loadUi(os.path.join(HERE, "pyqt/llmrunner/advanced_settings.ui"))
+        advanced_settings_window = uic.loadUi(os.path.join(HERE, "pyqt/advanced_settings.ui"))
         advanced_settings_window.exec()
 
     def about(self):
         # display pyqt/about.ui popup window
         HERE = os.path.dirname(os.path.abspath(__file__))
-        about_window = uic.loadUi(os.path.join(HERE, "pyqt/llmrunner/about.ui"))
+        about_window = uic.loadUi(os.path.join(HERE, "pyqt/about.ui"))
         about_window.setWindowTitle(f"About Chat AI")
         about_window.title.setText(f"Chat AI v{VERSION}")
         about_window.exec()
@@ -225,15 +230,16 @@ class ChatbotWindow(LLMWindow):
         username = self.ui.username.text()
         botname = self.ui.botname.text()
         user_input = self.ui.prompt.text()
+        llm_action = self.ui.action.currentText()
         self.ui.prompt.setText("")
-        self.conversation.add_message(username, user_input)
+        if llm_action == "action":
+            llm_action = "do_action"
+        else:
+            self.conversation.add_message(username, user_input)
         self.ui.generated_text.setPlainText(f"{self.conversation.dialogue}")
         self.ui.prompt.setText("")
         properties = self.prep_properties()
         # get current action and set it on properties
-        llm_action = self.ui.action.currentText()
-        if llm_action == "action":
-            llm_action = "do_action"
         self.client.message = {
             "action": "llm",
             "type": llm_action,

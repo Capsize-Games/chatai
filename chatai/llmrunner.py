@@ -115,7 +115,7 @@ class LLMRunner(BaseRunner):
         torch.cuda.empty_cache()
         gc.collect()
 
-    def load_model(self, model_name, pipeline_type=None, offline=False):
+    def load_model(self, model_name, pipeline_type=None, offline=True):
         if self.model_name == model_name and self.model and self.tokenizer:
             return
         local_files_only = offline
@@ -225,21 +225,18 @@ class LLMRunner(BaseRunner):
 
         # summarize the conversation if needed
         if conversation.do_summary:
-            results = self.generate(prompt=conversation.summary_prompt, seed=self.seed, **properties, return_result=True)
+            results = self.generate(prompt=conversation.summary_prompt(username, botname), seed=self.seed, **properties, return_result=True, skip_special_tokens=True)
             summary = results
             conversation.update_summary(summary)
 
-        # let's tokenize the conversation
-
-
         # get the bot's mood
         mood_prompt = conversation.get_bot_mood_prompt(botname, username)
-        mood_results = self.generate(mood_prompt, seed=self.seed, **properties, return_result=True)
+        mood_results = self.generate(mood_prompt, seed=self.seed, **properties, return_result=True, skip_special_tokens=True)
         mood = mood_results
 
         # get the user's sentiment
         sentiment_prompt = conversation.format_user_sentiment_prompt(botname, username)
-        sentiment_results = self.generate(sentiment_prompt, seed=self.seed, **properties, return_result=True)
+        sentiment_results = self.generate(sentiment_prompt, seed=self.seed, **properties, return_result=True, skip_special_tokens=True)
         user_sentiment = sentiment_results
 
         # setup the prompt for the bot response
@@ -250,7 +247,33 @@ class LLMRunner(BaseRunner):
         botname = kwargs.get("botname")
         username = kwargs.get("username")
         conversation = kwargs.get("conversation")
-        return conversation.format_action_prompt(botname, username, user_input)
+        action_prompt = conversation.format_action_prompt(botname, username, user_input)
+        action_results = self.generate(action_prompt, seed=self.seed, **kwargs.get("properties", {}), return_result=True, skip_special_tokens=True)
+
+        # format action and reaction
+        formatted_action_result = f"{username} {user_input}."
+        action_results = action_results.strip()
+        # if not action_results.startswith(botname):
+        #     formatted_action_result += f" {botname} {action_results}"
+        # else:
+        formatted_action_result += f" {action_results}"
+
+        conversation.add_action(username, formatted_action_result)
+        summary_prompt = conversation.summary_prompt(username, botname)
+        properties = kwargs.get("properties", {})
+        properties["temperature"] = 1
+        properties["top_k"] = 40
+        properties["repetition_penalty"] = 10.0
+        properties["top_p"] = 0.9
+        properties["num_beams"] = 3
+        summary_results = self.generate(prompt=summary_prompt, seed=self.seed, **properties, return_result=True, skip_special_tokens=True)
+        conversation.update_summary(summary_results)
+        # Add summary prompt to conversation
+        self.set_message({
+            "type": "do_action",
+            "botname": botname,
+            "response": formatted_action_result
+        })
 
     def generate(
         self,
@@ -315,27 +338,20 @@ class LLMRunner(BaseRunner):
         if not prompt:
             if type == "chat":
                 prompt = self.generate_chat_prompt(user_input, properties=properties, botname=botname,username=username,conversation=conversation)
-                top_k = 20
+                top_k = 30
                 top_p = 0.9
-                num_beams = 3
-                repetition_penalty = 1.5
+                num_beams = 6
+                repetition_penalty = 20.0
                 early_stopping = True
-                max_length = 100
-                min_length = 0
+                max_length = 512
+                min_length = 30
                 temperature = 1.0
                 skip_special_tokens = False
             elif type == "do_action":
-                prompt = self.generate_action_prompt(user_input, properties=properties, botname=botname,
-                                                   username=username, conversation=conversation)
-                top_k = 20
-                top_p = 0.9
-                num_beams = 3
-                repetition_penalty = 1.5
-                early_stopping = True
-                max_length = 100
-                min_length = 0
-                temperature = 1.0
-                skip_special_tokens = False
+                self.generate_action_prompt(
+                    user_input, properties=properties, botname=botname,
+                    username=username, conversation=conversation)
+                return
             elif type == "generate_characters":
                 self.generate_character_prompt(**properties)
                 return
