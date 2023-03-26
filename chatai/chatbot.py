@@ -15,7 +15,6 @@ class ChatbotWindow(LLMWindow):
 
     def message_handler(self, *args, **kwargs):
         message = args[0]["response"]
-        botname = message["botname"]
         type = message["type"]
         if type == "generate_characters":
             self.username = message["username"]
@@ -23,29 +22,7 @@ class ChatbotWindow(LLMWindow):
             self.ui.username.setText(self.username)
             self.ui.botname.setText(self.botname)
         else:
-            response = message["response"]
-            response = response.replace("<pad>", "")
-            response = response.replace("<unk>", "")
-            formatted_response = ""
-            special_character = "</s>"
-            if type == "do_action":
-                self.ui.generated_text.appendPlainText(response)
-            else:
-                incomplete = False
-                if special_character not in response:
-                    # remove all tokens after </s> and </s> itself
-                    incomplete = True
-                else:
-                    response = response[: response.find(special_character)]
-                response = response.strip()
-
-                if not incomplete:
-                    formatted_response = f"{botname} says: \"{response}\"\n"
-                    self.conversation.add_message(botname, response)
-                    self.ui.generated_text.appendPlainText(formatted_response)
-                else:
-                    self.chatbot_generate()
-
+            self.ui.generated_text.appendPlainText(message["response"])
         self.stop_progress_bar()
         self.enable_buttons()
 

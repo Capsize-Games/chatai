@@ -52,12 +52,9 @@ class LLMRunner(BaseRunner):
             conversation_vector = np.zeros(self.model.config.n_embd)
 
         # Encode the user's query
-        # query_vector = np.mean(self.model(self.tokenizer(user_query, return_tensors='pt'))[0].detach().numpy(), axis=1)
-        # same thing but use torch
         query_vector = self.tokenizer.encode(user_query, return_tensors='pt')
 
         # Concatenate the vectors
-        # combined_vector = np.concatenate([conversation_vector, query_vector])
         combined_vector = torch.cat([conversation_vector, query_vector], dim=-1)
 
         # Generate a response from the LLM model
@@ -208,18 +205,43 @@ class LLMRunner(BaseRunner):
         self.set_seed(random.randint(0, 100000))
         prompt = prefix + random.choice(prompts) + ": "
         botname = self.generate(prompt=prompt, seed=self.seed, **properties, return_result=True, skip_special_tokens = True)
+
         self.set_message({
             "type": "generate_characters",
             "username": username,
             "botname": botname,
         })
 
+    def process_bot_response(self, string, botname):
+        """
+        Removes specified substrings, whitespaces, and double quotes from a string.
+
+        Args:
+        string (str): The input string to process.
+        botname (str): The name of the bot, which will be removed from the string.
+
+        Returns:
+        str: The processed string with specified substrings removed and whitespaces/double quotes stripped.
+        """
+        # strip all special tokens
+        if not string:
+            return ""
+        for specialtoken in ["</s>", "<pad>", "<unk>", "<bos>", "<eos>"]:
+            string = string.replace(specialtoken, "")
+
+        substrings_to_remove = [f"{botname} says:", f"{botname}:"]
+        for substring in substrings_to_remove:
+            string = string.replace(substring, "")
+        string = string.strip()
+        string = string.replace('"', '')
+        return string
 
     def generate_chat_prompt(self, user_input, **kwargs):
         botname = kwargs.get("botname")
         username = kwargs.get("username")
         conversation = kwargs.get("conversation")
         properties = kwargs.get("properties", {})
+
 
         # summarize the conversation if needed
         if conversation.do_summary:
@@ -229,8 +251,21 @@ class LLMRunner(BaseRunner):
 
         # get the bot's mood
         mood_prompt = conversation.get_bot_mood_prompt(botname, username)
+
+        properties["temperature"] = 1.6
+        properties["top_k"] = 70
+        properties["repetition_penalty"] = 20.0
+        properties["top_p"] = 1.0
+        properties["num_beams"] = 6
         mood_results = self.generate(mood_prompt, seed=self.seed, **properties, return_result=True, skip_special_tokens=True)
         mood = mood_results
+        # trim
+        mood = mood.strip()
+        # strip period from end of mood
+        if mood.endswith("."):
+            mood = mood[:-1]
+        # lower
+        mood = mood.lower()
 
         # get the user's sentiment
         sentiment_prompt = conversation.format_user_sentiment_prompt(botname, username)
@@ -238,8 +273,27 @@ class LLMRunner(BaseRunner):
         user_sentiment = sentiment_results
 
         # setup the prompt for the bot response
-        prompt = conversation.format_prompt(botname, username, mood, user_sentiment)
-        return prompt
+        properties["top_k"] = 70
+        properties["top_p"] = 1.0
+        properties["num_beams"] = 6
+        properties["repetition_penalty"] = 20.0
+        properties["early_stopping"] = True
+        properties["max_length"] = 512
+        properties["min_length"] = 0
+        properties["temperature"] = 2.0
+        properties["skip_special_tokens"] = False
+        prompt = conversation.generate_response_prompt(botname, username, mood, user_sentiment)
+        inputs = self.tokenizer(prompt, return_tensors="pt").input_ids.to("cuda")
+        properties.pop("skip_special_tokens")
+        outputs = self.model.generate(inputs, **properties)
+        results = self.tokenizer.batch_decode(outputs, skip_special_tokens=True)[0]
+        response = self.process_bot_response(results, botname)
+        conversation.add_message(botname, response)
+        self.set_message({
+            "type": "do_action",
+            "botname": botname,
+            "response": f"{botname} says: \"{response}\""
+        })
 
     def generate_action_prompt(self, user_input, **kwargs):
         botname = kwargs.get("botname")
@@ -259,11 +313,11 @@ class LLMRunner(BaseRunner):
         conversation.add_action(username, formatted_action_result)
         summary_prompt = conversation.summary_prompt(username, botname)
         properties = kwargs.get("properties", {})
-        properties["temperature"] = 1
-        properties["top_k"] = 40
-        properties["repetition_penalty"] = 10.0
-        properties["top_p"] = 0.9
-        properties["num_beams"] = 3
+        properties["temperature"] = 1.6
+        properties["top_k"] = 70
+        properties["repetition_penalty"] = 20.0
+        properties["top_p"] = 1.0
+        properties["num_beams"] = 6
         summary_results = self.generate(prompt=summary_prompt, seed=self.seed, **properties, return_result=True, skip_special_tokens=True)
         conversation.update_summary(summary_results)
         # Add summary prompt to conversation
@@ -338,16 +392,8 @@ class LLMRunner(BaseRunner):
 
         if not prompt:
             if type == "chat":
-                prompt = self.generate_chat_prompt(user_input, properties=properties, botname=botname,username=username,conversation=conversation)
-                top_k = 30
-                top_p = 0.9
-                num_beams = 6
-                repetition_penalty = 20.0
-                early_stopping = True
-                max_length = 512
-                min_length = 30
-                temperature = 1.0
-                skip_special_tokens = False
+                self.generate_chat_prompt(user_input, properties=properties, botname=botname,username=username,conversation=conversation)
+                return
             elif type == "do_action":
                 self.generate_action_prompt(
                     user_input, properties=properties, botname=botname,

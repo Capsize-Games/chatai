@@ -219,7 +219,13 @@
     <addaction name="actionSave"/>
     <addaction name="actionQuit"/>
    </widget>
+   <widget class="QMenu" name="menuPersonalities">
+    <property name="title">
+     <string>Personalities</string>
+    </property>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuPersonalities"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
