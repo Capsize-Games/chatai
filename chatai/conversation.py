@@ -63,7 +63,6 @@ class Conversation:
             if "action" in message:
                 formatted_messages.append(f"    {message['action']}")
             else:
-                print(message)
                 formatted_messages.append(f"{message['username']} says: \"{message['message']}\"")
         return "\n".join(formatted_messages)
 
