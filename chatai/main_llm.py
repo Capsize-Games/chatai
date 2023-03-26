@@ -1,6 +1,5 @@
 import json
 import os
-import pickle
 import random
 from PyQt6 import uic
 from PyQt6.QtCore import pyqtSignal, pyqtSlot
@@ -8,7 +7,7 @@ from PyQt6.QtWidgets import QFileDialog, QMainWindow
 from PyQt6.QtGui import QGuiApplication
 from aiengine.pyqt_offline_client import OfflineClient
 from aiengine.settings import TEXT_MODELS
-from llmrunner import LLMRunner
+from aiengine.llmrunner import LLMRunner
 from settings_manager import SettingsManager
 from aiengine.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
 from settings import VERSION
@@ -100,9 +99,10 @@ class LLMWindow(QMainWindow):
             "action": "llm",
             "type": "generate",
             "data": {
-                "prompt": prompt,
+                "user_input": prompt,
                 "seed": seed,
                 "properties": properties,
+                "skip_special_tokens": False
             }
 
         }
@@ -238,6 +238,7 @@ class MainWindow(LLMWindow):
         self.ui.seed.setPlainText(str(random.randint(0, 1000000)))
 
         # on generate_button clicked
+        print("INITIALIZING GENERATE BUTTON")
         self.ui.generate_button.clicked.connect(self.handle_generate)
 
         self.ui.actionNew.triggered.connect(self.handle_new)

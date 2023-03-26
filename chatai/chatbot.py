@@ -1,4 +1,3 @@
-import json
 import os
 import queue
 import random
@@ -12,6 +11,52 @@ from settings import VERSION
 
 class ChatbotWindow(LLMWindow):
     template = "chatbot"
+    chatbot_result_queue = queue.Queue()
+    conversation: Conversation = None
+    chat_type = "interesting"
+
+    @property
+    def username(self):
+        return self.ui.username.text()
+
+    @username.setter
+    def username(self, value):
+        self.ui.username.setText(value)
+
+    @property
+    def botname(self):
+        return self.ui.botname.text()
+
+    @botname.setter
+    def botname(self, value):
+        self.ui.botname.setText(value)
+
+    @property
+    def action(self):
+        return self.ui.action.currentText()
+
+    @property
+    def prompt(self):
+        return self.ui.prompt.text()
+
+    @prompt.setter
+    def prompt(self, value):
+        self.ui.prompt.setText(value)
+
+    @pyqtSlot(dict)
+    def process_response(self, response):
+        self.enable_buttons()
+        self.stop_progress_bar()
+        self.chatbot_result_queue.put((response["text"], response["botname"]))
+
+    def __init__(self, *args, **kwargs):
+        self.seed = random.randint(0, 1000000)
+
+        # when user clicks the close window button call self.closeEvent
+
+        super().__init__(*args, **kwargs)
+
+        self.client.llm_runner.conversation = self.conversation
 
     def message_handler(self, *args, **kwargs):
         message = args[0]["response"]
@@ -19,96 +64,62 @@ class ChatbotWindow(LLMWindow):
         if type == "generate_characters":
             self.username = message["username"]
             self.botname = message["botname"]
-            self.ui.username.setText(self.username)
-            self.ui.botname.setText(self.botname)
         else:
             self.ui.generated_text.appendPlainText(message["response"])
         self.stop_progress_bar()
         self.enable_buttons()
 
-    chatbot_result_queue = queue.Queue()
-
-    prompt_settings = {
-        "chat": {
-            "normal": {
-                "max_length": 20,
-                "min_length": 0,
-                "num_beams": 1,
-                "temperature": 1.0,
-                "top_k": 1,
-                "top_p": 0.9,
-                "repetition_penalty": 1.0,
-                "length_penalty": 1.0,
-                "no_repeat_ngram_size": 1,
-                "num_return_sequences": 1,
-                "model": "flan-t5-xl",
-            },
-            "interesting": {
-                "max_length": 512,
-                "min_length": 0,
-                "num_beams": 3,
-                "temperature": 1.2,
-                "top_k": 120,
-                "top_p": 0.9,
-                "repetition_penalty": 2.0,
-                "length_penalty": 0.1,
-                "no_repeat_ngram_size": 2,
-                "num_return_sequences": 1,
-                "model": "flan-t5-xl",
-            },
-            "wild": {
-                "max_length": 512,
-                "min_length": 0,
-                "num_beams": 3,
-                "temperature": 2.0,
-                "top_k": 200,
-                "top_p": 0.9,
-                "repetition_penalty": 2.0,
-                "length_penalty": 0.1,
-                "no_repeat_ngram_size": 2,
-                "num_return_sequences": 1,
-                "model": "flan-t5-xl",
-            }
-        }
-    }
-
-    def __init__(self, *args, **kwargs):
-        chat_prompt_keys = self.prompt_settings["chat"].keys()
-        prompt_key = "interesting"#random.choice(list(chat_prompt_keys))
-        settings = self.prompt_settings["chat"][prompt_key]
-        self.properties = kwargs.pop("properties", settings)
-        self.seed = random.randint(0, 1000000)
-
-        # when user clicks the close window button call self.closeEvent
-
-        super().__init__(*args, **kwargs)
+    def clear_prompt(self):
+        print("clear prompt")
+        self.ui.prompt.clear()
 
     def tqdm_callback(self, *args, **kwargs):
         pass
 
     def initialize_form(self):
-        self.ui.send_button.clicked.connect(self.chatbot_generate)
-        self.conversation = Conversation(self)
+        self.conversation = Conversation(
+            client=self.client,
+            username=self.username,
+            botname=self.botname,
+            chat_type=self.chat_type
+        )
+        self.client.conversation = self.conversation
+        self.set_tab_order()
+        self.initialize_name_inputs()
+        self.initilize_action_dropdown()
+        self.ui.username.setFocus()
+        self.connect_send_pressed()
+        self.initialize_buttons()
+        self.initialiizse_toolbar()
+        self.ui.setWindowTitle(f"Chat AI v{VERSION}")
+        self.ui.generated_text.setReadOnly(True)
+        self.center()
+        self.ui.show()
 
-        # create a thread safe queue variable that will store results
+    def initialize_name_inputs(self):
+        self.ui.username.textChanged.connect(self.update_conversation_names)
+        self.ui.botname.textChanged.connect(self.update_conversation_names)
 
-        # set the tab focus order for self.chatbot_ui.username, self.chatbot_ui.botname, self.chatbot_ui.prompt
-        self.ui.username.setTabOrder(self.ui.username, self.ui.botname)
-        self.ui.botname.setTabOrder(self.ui.botname, self.ui.prompt)
-        self.ui.prompt.setTabOrder(self.ui.prompt, self.ui.send_button)
+    def update_conversation_names(self):
+        self.conversation.username = self.username
+        self.conversation.botname = self.botname
 
-        # set dropdown menu values
+    def initilize_action_dropdown(self):
         actions = ["chat", "action"]
         self.ui.action.addItems(actions)
         self.ui.action.setCurrentIndex(0)
 
-        self.ui.username.setFocus()
-        self.ui.prompt.returnPressed.connect(self.chatbot_generate)
+    def set_tab_order(self):
+        self.ui.username.setTabOrder(self.ui.username, self.ui.botname)
+        self.ui.botname.setTabOrder(self.ui.botname, self.ui.prompt)
+        self.ui.prompt.setTabOrder(self.ui.prompt, self.ui.send_button)
 
+    def initialize_buttons(self):
+        self.ui.send_button.clicked.connect(self.send_message)
         self.ui.clear_conversation_button.clicked.connect(self.clear_conversation)
-
         self.ui.button_generate_characters.clicked.connect(self.generate_characters)
 
+    def initialiizse_toolbar(self):
         self.ui.actionAbout.triggered.connect(self.about)
         self.ui.actionNew.triggered.connect(self.new_conversation)
         self.ui.actionSave.triggered.connect(self.save_conversation)
@@ -116,20 +127,14 @@ class ChatbotWindow(LLMWindow):
         self.ui.actionQuit.triggered.connect(self.handle_quit)
         self.ui.actionAdvanced.triggered.connect(self.advanced_settings)
 
-        self.ui.setWindowTitle(f"Chat AI v{VERSION}")
-
-        self.ui.generated_text.setReadOnly(True)
-
-        self.center()
-
-        self.ui.show()
-
-    def advanced_settings(self):
+    @staticmethod
+    def advanced_settings():
         HERE = os.path.dirname(os.path.abspath(__file__))
         advanced_settings_window = uic.loadUi(os.path.join(HERE, "pyqt/advanced_settings.ui"))
         advanced_settings_window.exec()
 
-    def about(self):
+    @staticmethod
+    def about():
         # display pyqt/about.ui popup window
         HERE = os.path.dirname(os.path.abspath(__file__))
         about_window = uic.loadUi(os.path.join(HERE, "pyqt/about.ui"))
@@ -147,118 +152,59 @@ class ChatbotWindow(LLMWindow):
         self.parent.show()
 
     def generate_characters(self):
-        self.seed += 1
-        self.disable_buttons()
-        self.start_progress_bar()
-        self.client.message = {
-            "prompt": None,
-            "user_input": None,
-            "action": "llm",
-            "type": "generate_characters",
-            "data": {
-                "properties": self.prep_properties(),
-                "seed": self.seed
-            }
-        }
+        self.disable_generate()
+        self.conversation.send_generate_characters_message()
+        self.seed = self.conversation.seed
 
     def save_conversation(self):
-        filename = filename, _ = QFileDialog.getSaveFileName(
+        filename, _ = QFileDialog.getSaveFileName(
             None, "Save Conversation", "", "JSON files (*.json)"
         )
         if filename:
-            if ".json" not in filename:
-                filename += ".json"
-            username = self.ui.username.text()
-            botname = self.ui.botname.text()
-            with open(filename, "w") as f:
-                data = {
-                    "username": username,
-                    "botname": botname,
-                    "conversation": self.conversation._dialogue,
-                    "seed": self.seed,
-                    "properties": self.properties
-                }
-                f.write(json.dumps(data, indent=4))
+            self.conversation.save(filename)
 
     def load_conversation(self):
-        filename = filename, _ = QFileDialog.getOpenFileName(
+        filename, _ = QFileDialog.getOpenFileName(
             None, "Load Conversation", "", "JSON files (*.json)"
         )
         if filename:
-            with open(filename, "r") as f:
-                data = json.loads(f.read())
-                self.ui.username.setText(data["username"])
-                self.ui.botname.setText(data["botname"])
-                self.conversation.dialogue = data["conversation"]
-                self.ui.generated_text.setPlainText(self.conversation.dialogue)
-                self.seed = data["seed"]
-                self.properties = data["properties"]
+            self.conversation.load(filename)
+            self.ui.generated_text.setPlainText(self.conversation.dialogue)
 
     def clear_conversation(self):
-        self.seed += 1
-        self.conversation = Conversation(self)
+        self.conversation.reset()
+        self.seed = self.conversation.seed
         self.ui.generated_text.setPlainText("")
 
-    def chatbot_generate(self):
-        # disable the generate button
-        self.ui.progressBar.setValue(0)
+    def start_progress_bar(self):
         self.ui.progressBar.setRange(0, 0)
+        self.ui.progressBar.setValue(0)
+
+    def connect_send_pressed(self):
+        self.ui.prompt.returnPressed.connect(self.send_message)
+
+    def disconnect_send_pressed(self):
+        self.ui.prompt.returnPressed.disconnect()
+
+    def disable_generate(self):
+        self.disable_buttons()
+        self.start_progress_bar()
+        self.disconnect_send_pressed()
         self.ui.send_button.setEnabled(False)
-        username = self.ui.username.text()
-        botname = self.ui.botname.text()
-        user_input = self.ui.prompt.text()
-        llm_action = self.ui.action.currentText()
-        self.ui.prompt.setText("")
-        if llm_action == "action":
-            llm_action = "do_action"
-        else:
-            self.conversation.add_message(username, user_input)
-        self.ui.generated_text.setPlainText(f"{self.conversation.dialogue}")
-        self.ui.prompt.setText("")
-        properties = self.prep_properties()
-        # get current action and set it on properties
-        self.client.message = {
-            "action": "llm",
-            "type": llm_action,
-            "data": {
-                "user_input": user_input,
-                "prompt": None,
-                "username": username,
-                "botname": botname,
-                "seed": self.seed,
-                "conversation": self.conversation,
-                "properties": properties,
-            }
-        }
+
+    def send_message(self):
+        self.disable_generate()
+        self.conversation.send_user_message(self.action, self.prompt)
+        self.clear_prompt()
 
     def enable_buttons(self):
         self.ui.send_button.setEnabled(True)
         self.ui.button_generate_characters.setEnabled(True)
+        self.connect_send_pressed()
 
     def disable_buttons(self):
         self.ui.send_button.setEnabled(False)
         self.ui.button_generate_characters.setEnabled(False)
-
-    @pyqtSlot(dict)
-    def process_response(self, response):
-        self.enable_buttons()
-        self.stop_progress_bar()
-        self.chatbot_result_queue.put((response["text"], response["botname"]))
-
-    def prep_properties(self):
-        return {
-            "max_length": self.properties["max_length"],
-            "min_length": self.properties["min_length"],
-            "num_beams": self.properties["num_beams"],
-            "temperature": self.properties["temperature"],
-            "top_k": self.properties["top_k"],
-            "top_p": self.properties["top_p"],
-            "repetition_penalty": self.properties["repetition_penalty"],
-            "length_penalty": self.properties["length_penalty"],
-            "no_repeat_ngram_size": self.properties["no_repeat_ngram_size"],
-            "num_return_sequences": self.properties["num_return_sequences"],
-            "model": self.properties["model"],
-        }
 
 
 if __name__ == '__main__':
