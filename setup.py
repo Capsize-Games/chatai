@@ -6,6 +6,6 @@ setup(
     description='A python library for AI',
     author='Capsize LLC',
     install_requires=[
-        #"aiengine==1.8.10",
+        "aiengine==1.8.10",
     ]
 )

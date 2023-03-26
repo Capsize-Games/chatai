@@ -20,8 +20,8 @@ to and from an active Google T5-Flan model.
 #### For development on Chat AI
 
 1. Create venv `python -m venv venv`
-2. Clone [aiengine](https://github.com/Capsize-Games/chat-ai)
-3. `cd aiengine && pip install -r requirements.txt`
+2. Clone [chatai](https://github.com/Capsize-Games/chatai)
+3. `cd chatai && pip install -r requirements.txt`
 
 Chat AI is built on top of sdrunner which is responsible for handling the model's input and output sdrunner can be found here.
 
