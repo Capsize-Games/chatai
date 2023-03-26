@@ -152,7 +152,6 @@ class LLMRunner(BaseRunner):
                     model_name,
                     local_files_only=local_files_only,
                     device_map=self.device_map,
-                    torch_dtype=torch.float16,
                     load_in_8bit=self.load_in_8bit,
                 )
                 self.model.eval()
