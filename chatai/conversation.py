@@ -1,3 +1,6 @@
+import random
+
+
 class Conversation:
     summary_length = 20
     special_characters = [
@@ -61,7 +64,7 @@ class Conversation:
         formatted_messages = []
         for message in self._dialogue:
             if "action" in message:
-                formatted_messages.append(f"    {message['action']}")
+                formatted_messages.append(f"  {message['username']} {message['action']}")
             else:
                 formatted_messages.append(f"{message['username']} says: \"{message['message']}\"")
         return "\n".join(formatted_messages)
@@ -70,15 +73,6 @@ class Conversation:
     def dialogue(self, dialogue):
         self._dialogue = dialogue
 
-    @property
-    def dialogue_no_action(self):
-        formatted_messages = []
-        for message in self._dialogue:
-            if "action" not in message:
-                formatted_messages.append(f"{message['username']} says: \"{message['message']}\"")
-        return "\n".join(formatted_messages)
-
-
     def update_summary(self, summary):
         self.converation_summary = summary
 
@@ -86,10 +80,24 @@ class Conversation:
         prompt = f"{self.premise(botname, username)}\n{self.converation_summary}\n\n{self.dialogue}\n\n{username}'s sentiment is "
         return prompt
 
-    def prompt_prep(self, botname, username, mood, user_sentiment):
-        return f"{self.premise(botname, username)}\n{self.converation_summary}\n{username} is {user_sentiment}.\n{botname} is {mood}.\n\n{self.dialogue}"
+    def prompt_prep(self, botname, username, mood=None, user_sentiment=None):
+        mood_segments = []
+        if user_sentiment:
+            sentiment_prompt = f"{username}'s sentiment is {user_sentiment}."
+            mood_segments.append(user_sentiment)
+        if mood:
+            mood_prompt = f"{botname} mood is {mood}."
+            mood_segments.append(mood)
+        combined_sentiment_mood = " ".join(mood_segments)
+        prompt_segments = [
+            self.premise(botname, username),
+            self.converation_summary,
+            combined_sentiment_mood,
+            self.dialogue
+        ]
+        return "\n\n".join([segment for segment in prompt_segments if segment])
 
-    def generate_prompt(self, prompt, botname, username, mood, user_sentiment, prefix="", suffix=""):
+    def generate_prompt(self, prompt, botname, username, mood=None, user_sentiment=None, prefix="", suffix=""):
         """
         Returns a prompt that has backstory mixed with a user defined prefix
         :param prefix:
@@ -99,10 +107,11 @@ class Conversation:
         :param user_sentiment:
         :return:
         """
-        return f"{self.prompt_prep(botname, username, mood, user_sentiment)}\n<extra_id_0>{prefix}{prompt}:"
+        prompt = f"{self.prompt_prep(botname, username, mood, user_sentiment)}\n<extra_id_0>{prefix}{prompt}:"
+        return prompt
 
     def generate_response_prompt(self, botname, username, mood, user_sentiment):
-        return self.generate_prompt(f"\n{botname} says", botname, username, mood, user_sentiment)
+        return self.generate_prompt(f"{botname} says", botname, username, mood, user_sentiment)
 
     def generate_summary_prompt(self, botname, username, mood, user_sentiment):
         return self.generate_prompt(f"Generate a summary:", botname, username, mood, user_sentiment)
@@ -113,17 +122,24 @@ class Conversation:
     def generate_mood_prompt(self, botname, username, mood, user_sentiment):
         return self.generate_prompt(f"What is the mood of {botname}:", botname, username, mood, user_sentiment)
 
+    def format_bot_alive_prompt(self, botname, username):
+        return self.generate_prompt(f"{self.converation_summary}\n\n{self.dialogue}<extra_id_0>Is {botname} still alive, yes or no? </s>", botname, username)
+
     def generate_sentiment_prompt(self, user, botname, username, mood, user_sentiment):
         return self.generate_prompt(f"What is the sentiment of {user}:", botname, username, mood, user_sentiment)
 
     def generate_action_prompt(self, botname, username, mood, user_sentiment):
-        return self.generate_prompt(f"Generate an action for {username}:", botname, username, mood, user_sentiment)
+        return self.generate_prompt(f"Describe what happens next", botname, username, mood, user_sentiment)
 
     def generate_random_prompt(self, botname, username, mood, user_sentiment):
         return self.generate_prompt(f"Generate a random event:", botname, username, mood, user_sentiment)
 
     def premise(self, botname, username):
-        return f"{botname} hates {username}. {botname} is very mean. {botname} uses sarcasm, rude responses, curse words and hate speech. {botname} is not very helpful. Everything {botname} says is mean. {botname} is hateful."
+        mean_bot = f"{botname} hates {username}. {botname} is very mean. {botname} uses sarcasm, rude responses, curse words and hate speech. Everything {botname} says is mean. {botname} is hateful."
+        nice_bot = f"{botname} loves {username}. {botname} is very nice. {botname} uses compliments, kind responses, and nice words. Everything {botname} says is nice. {botname} is kind."
+        weird_bot = f"{botname} is weird. {botname} is very weird. {botname} uses weird responses, and weird words. Everything {botname} says is weird. {botname} is weird."
+        insane_bot = f"{botname} is insane. {botname} is very insane. {botname} uses insane responses, and insane words. Everything {botname} says is insane. {botname} is insane."
+        return random.choice([mean_bot, nice_bot, weird_bot, insane_bot])
 
     def format_random_prompt(self, botname, username, mood, user_sentiment, random_prompt):
         prompt = f"{self.premise(botname, username)}\n\n{self.converation_summary}\n<extra_id_0>Generate a random event that could happen next. <extra_id_1>{random_prompt}: "
@@ -131,9 +147,6 @@ class Conversation:
 
     def format_conversation(self, user_name):
         pass
-
-    def format_action_prompt(self, botname, username, action):
-        return f"{self.premise(botname, username)}\n{username} {action}. <extra_id_1>What happens next? "
 
     def get_bot_mood_prompt(self, botname, username):
         return f"{self.premise(botname, username)}\n{self.converation_summary}\n\n{self.dialogue}\n\n{botname}'s mood is "
