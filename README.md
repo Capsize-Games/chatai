@@ -35,10 +35,20 @@ python main.py
 
 ## API
 
-1. `pip install chatai`
-2. `from chatai import ChatAI`
-3. `ai = ChatAI()`
+### Install
 
-### Query the API 
+`pip install chatai`
 
-`ai.query(query="Hello, how are you?", type="chat", botname="ChatBot", username="User")`
+### Example usage
+
+```
+from chatai.conversation import Conversation
+from aiengine.offline_client import OfflineClient
+
+def message_callback(message):
+    print(message)
+
+client = OfflineClient(message_callback=message_callback)
+conversation = Conversation(client=client)
+conversation.send_generate_characters_message()
+```
