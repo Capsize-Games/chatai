@@ -7,37 +7,43 @@ to and from an active Google T5-Flan model.
 
 ---
 
-## Dev Setup
+## Bundled Installation
 
-### Installation
+[Official Build can be acquired here](https://capsizegames.itch.io/chat-ai) for those who want to use a compiled version of Chat AI without having to install any additional requirements
 
-#### Prerequisites
+---
+
+## Development
+
+### Prerequisites
 
 - Ubuntu 20.04+ or Windows 10+
 - Python 3.10.6
 - pip-23.0.1
 
-#### For development on Chat AI
+#### Pypi installation
 
-1. Create venv `python -m venv venv`
-2. Clone [chatai](https://github.com/Capsize-Games/chatai)
-3. `cd chatai && pip install -r requirements.txt`
+Use this installation method if you intend to use Chat AI from the command line or with
+other python libraries or scripts.
 
-Chat AI is built on top of sdrunner which is responsible for handling the model's input and output sdrunner can be found here.
+`pip install chatai`
 
-#### Running the application
+#### Development installation
 
-```
-python main.py
-```
+Use this installation method if you intend to modify the source code of Chat AI.
+
+- Ubuntu 20.04+ or Windows 10+
+- Python 3.10.6
+- pip-23.0.1
+
+1. Fork this repo on github
+2. `git clone https://github.com/Capsize-Games/chatai`
+2. `cd chatai && pip install -r requirements.txt`
+3. `python main.py`
 
 ---
 
 ## API
-
-### Install
-
-`pip install chatai`
 
 ### Example usage
 
