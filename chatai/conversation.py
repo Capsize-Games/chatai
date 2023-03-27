@@ -396,12 +396,13 @@ class Conversation:
         return self.generate_prompt(f"Generate a random event:", self.botname, self.username, mood, user_sentiment)
 
     def premise(self):
-        mean_bot = f"{self.botname} hates {self.username}. {self.botname} is very mean. {self.botname} uses sarcasm, rude responses, curse words and hate speech. Everything {self.botname} says is mean. {self.botname} is hateful."
-        nice_bot = f"{self.botname} loves {self.username}. {self.botname} is very nice. {self.botname} uses compliments, kind responses, and nice words. Everything {self.botname} says is nice. {self.botname} is kind."
-        weird_bot = f"{self.botname} is weird. {self.botname} is very weird. {self.botname} uses weird responses, and weird words. Everything {self.botname} says is weird. {self.botname} is weird."
-        insane_bot = f"{self.botname} is insane. {self.botname} is very insane. {self.botname} uses insane responses, and insane words. Everything {self.botname} says is insane. {self.botname} is insane."
-        bot_personality = random.choice([mean_bot, nice_bot, weird_bot, insane_bot])
-        result = f"{self.username} and {self.botname} are talking. {bot_personality}"
+        # mean_bot = f"{self.botname} hates {self.username}. {self.botname} is very mean. {self.botname} uses sarcasm, rude responses, curse words and hate speech. Everything {self.botname} says is mean. {self.botname} is hateful."
+        # nice_bot = f"{self.botname} loves {self.username}. {self.botname} is very nice. {self.botname} uses compliments, kind responses, and nice words. Everything {self.botname} says is nice. {self.botname} is kind."
+        # weird_bot = f"{self.botname} is weird. {self.botname} is very weird. {self.botname} uses weird responses, and weird words. Everything {self.botname} says is weird. {self.botname} is weird."
+        # insane_bot = f"{self.botname} is insane. {self.botname} is very insane. {self.botname} uses insane responses, and insane words. Everything {self.botname} says is insane. {self.botname} is insane."
+        # bot_personality = random.choice([mean_bot, nice_bot, weird_bot, insane_bot])
+        bot_personality = ""
+        result = f"{self.username} and {self.botname} are talking, you will respond as {self.botname}."
         return result
 
     def format_random_prompt(self, mood, user_sentiment, random_prompt):
