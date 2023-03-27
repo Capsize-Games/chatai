@@ -5,11 +5,11 @@ from PyQt6 import uic
 from PyQt6.QtCore import pyqtSignal, pyqtSlot
 from PyQt6.QtWidgets import QFileDialog, QMainWindow
 from PyQt6.QtGui import QGuiApplication
-from aiengine.pyqt_offline_client import OfflineClient
-from aiengine.settings import TEXT_MODELS
-from aiengine.llmrunner import LLMRunner
+from aihandler.pyqt_offline_client import OfflineClient
+from aihandler.settings import TEXT_MODELS
+from aihandler.llmrunner import LLMRunner
 from settings_manager import SettingsManager
-from aiengine.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
+from aihandler.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
 from settings import VERSION
 
 

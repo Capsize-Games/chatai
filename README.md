@@ -49,7 +49,7 @@ Use this installation method if you intend to modify the source code of Chat AI.
 
 ```
 from chatai.conversation import Conversation
-from aiengine.offline_client import OfflineClient
+from aihandler.offline_client import OfflineClient
 
 def message_callback(message):
     print(message)

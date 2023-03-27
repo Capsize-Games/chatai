@@ -1,6 +1,6 @@
 import json
 import random
-from aiengine.pyqt_offline_client import OfflineClient
+from aihandler.pyqt_offline_client import OfflineClient
 
 
 choices = ['book', 'movie', 'tv show']

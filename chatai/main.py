@@ -1,7 +1,7 @@
 import settings
 import logging
 
-from aiengine.runner import SDRunner
+from aihandler.runner import SDRunner
 
 logging.getLogger('h5py._conv').setLevel(settings.LOG_LEVEL)
 logging.getLogger('tensorflow').setLevel(settings.LOG_LEVEL)
@@ -9,11 +9,11 @@ import os
 from PyQt6 import uic
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtWidgets import QApplication
-from aiengine.pyqt_offline_client import OfflineClient
-from aiengine.llmrunner import LLMRunner
+from aihandler.pyqt_offline_client import OfflineClient
+from aihandler.llmrunner import LLMRunner
 from chatbot import ChatbotWindow
 from main_llm import MainWindow
-from aiengine.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
+from aihandler.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
 
 
 class Launcher(QApplication):

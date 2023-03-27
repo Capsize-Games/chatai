@@ -1,6 +1,6 @@
 import os
 import pickle
-from aiengine.qtvar import BooleanVar, StringVar, IntVar, FloatVar, DoubleVar
+from aihandler.qtvar import BooleanVar, StringVar, IntVar, FloatVar, DoubleVar
 
 
 class PropertyBase:
