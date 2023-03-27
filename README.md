@@ -41,20 +41,3 @@ Use this installation method if you intend to modify the source code of Chat AI.
 3. `cd chatai && pip install -r requirements.txt`
 4. `python main.py`
 
----
-
-## API
-
-### Example usage
-
-```
-from chatai.conversation import Conversation
-from aihandler.offline_client import OfflineClient
-
-def message_callback(message):
-    print(message)
-
-client = OfflineClient(message_callback=message_callback)
-conversation = Conversation(client=client)
-conversation.send_generate_characters_message()
-```
