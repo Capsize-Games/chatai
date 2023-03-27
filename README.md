@@ -42,6 +42,7 @@ Use this installation method if you intend to modify the source code of Chat AI.
 
 1. Fork this repo on github
 2. `git clone https://github.com/Capsize-Games/chatai`
-3. `cd chatai && pip install -r requirements.txt`
+3. `python -m venv env` - skip if you don't want to use venv
+3. `cd chatai && pip install -e .`
 4. `cd chatai && python main.py`
 
