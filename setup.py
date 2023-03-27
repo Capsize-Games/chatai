@@ -5,7 +5,7 @@ setup(
     version='1.0.5',
     author='Capsize LLC',
     description='Chat AI: A chatbot framework',
-    long_description=open("README.md", "r", encoding="utf-8").read(),
+    long_description="",
     long_description_content_type="",
     keywords="ai, chatbot, chat, ai",
     license="AGPL-3.0",
