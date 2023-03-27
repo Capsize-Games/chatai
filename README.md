@@ -7,6 +7,8 @@
 Chat AI is an interface that sits on top of a custom engine which is responsible for processing requests and responses 
 to and from an active Google T5-Flan model.
 
+![img.png](img.png)
+
 ---
 
 ## Bundled Installation
