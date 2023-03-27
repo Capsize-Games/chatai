@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='chatai',
+    name='chat-ai',
     version='1.0.5',
     author='Capsize LLC',
     description='Chat AI: A chatbot framework',
