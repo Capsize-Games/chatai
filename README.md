@@ -26,7 +26,7 @@ to and from an active Google T5-Flan model.
 Use this installation method if you intend to use Chat AI from the command line or with
 other python libraries or scripts.
 
-`pip install chatai`
+`pip install chat-ai`
 
 #### Development installation
 
