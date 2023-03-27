@@ -10,9 +10,9 @@ setup(
     keywords="ai, chatbot, chat, ai",
     license="AGPL-3.0",
     author_email="contact@capsize.gg",
-    url="https://github.com/w4ffl35/chatai",
-    package_dir={"": "chatai"},
-    packages=find_packages("chatai"),
+    url="https://github.com/w4ffl35/chat-ai",
+    package_dir={"": "chat-ai"},
+    packages=find_packages("chat-ai"),
     include_package_data=True,
     python_requires=">=3.10.0",
     install_requires=[
