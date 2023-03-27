@@ -1,5 +1,7 @@
 [![Banner](banner.png)](https://capsizegames.itch.io/chat-ai)
 
+[![Upload Python Package](https://github.com/Capsize-Games/chatai/actions/workflows/python-publish.yml/badge.svg)](https://github.com/Capsize-Games/chatai/actions/workflows/python-publish.yml)
+
 # Chat AI: Run LLMs with your own hardware
 
 Chat AI is an interface that sits on top of a custom engine which is responsible for processing requests and responses 
