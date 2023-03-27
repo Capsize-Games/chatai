@@ -36,7 +36,9 @@ to and from an active Google T5-Flan model.
 Use this installation method if you intend to use Chat AI from the command line or with
 other python libraries or scripts.
 
-`pip install chatairunner`
+- `pip install chatairunner`
+- `pip install git+https://github.com/w4ffl35/diffusers.git@ckpt_fix`
+- `pip install git+https://github.com/w4ffl35/transformers.git@tensor_fix`
 
 #### Development installation
 
