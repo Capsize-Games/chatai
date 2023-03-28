@@ -1,9 +1,12 @@
 import json
 import random
+import threading
+
 from aihandler.pyqt_offline_client import OfflineClient
 from aihandler.llmrunner import LLMRunner
 
 
+# these prompts help guide character creation
 choices = ['book', 'movie', 'tv show']
 choices_a = ['dog', 'cat', 'fish', 'bird', 'monster', 'national leader']
 choices_b = [
@@ -27,7 +30,7 @@ character_prompts = [
 ]
 
 class Conversation:
-    model_name = "flan-t5-xl"
+    model_name = "flan-t5-xxl"
     client: OfflineClient = None
     username: str = ""
     botname: str = ""
@@ -42,45 +45,17 @@ class Conversation:
         "<pad>",
         "<unk>"
     ]
-    prompt_settings = {
-        "chat": {
-            "normal": {
-                "max_length": 20,
-                "min_length": 0,
-                "num_beams": 1,
-                "temperature": 1.0,
-                "top_k": 1,
-                "top_p": 0.9,
-                "repetition_penalty": 1.0,
-                "length_penalty": 1.0,
-                "no_repeat_ngram_size": 1,
-                "num_return_sequences": 1,
-            },
-            "interesting": {
-                "max_length": 512,
-                "min_length": 0,
-                "num_beams": 3,
-                "temperature": 1.2,
-                "top_k": 120,
-                "top_p": 0.9,
-                "repetition_penalty": 2.0,
-                "length_penalty": 0.1,
-                "no_repeat_ngram_size": 2,
-                "num_return_sequences": 1,
-            },
-            "wild": {
-                "max_length": 512,
-                "min_length": 0,
-                "num_beams": 3,
-                "temperature": 2.0,
-                "top_k": 200,
-                "top_p": 0.9,
-                "repetition_penalty": 2.0,
-                "length_penalty": 0.1,
-                "no_repeat_ngram_size": 2,
-                "num_return_sequences": 1,
-            }
-        }
+    settings = {
+        "max_length": 20,
+        "min_length": 0,
+        "num_beams": 1,
+        "temperature": 1.0,
+        "top_k": 1,
+        "top_p": 0.9,
+        "repetition_penalty": 1.0,
+        "length_penalty": 1.0,
+        "no_repeat_ngram_size": 1,
+        "num_return_sequences": 1,
     }
 
     def __init__(self, client, **kwargs):
@@ -93,7 +68,15 @@ class Conversation:
         :keyword seed:int The seed for the random number generator
         :keyword properties:dict The properties for the model
         """
-        self._initialize(client, **kwargs)  # Initialize the conversation
+        threading.Thread(target=self._initialize, args=(client,), kwargs=kwargs).start()
+        #self._initialize(client, **kwargs)  # Initialize the conversation
+
+    def load_type(self, conversation_type):
+        if conversation_type == "interesting":
+            self.__class__ = InterestingConversation
+        elif conversation_type == "wild":
+            self.__class__ = WildConversation
+
 
     def new_seed(self, seed: int = None):
         new_seed = seed
@@ -119,7 +102,6 @@ class Conversation:
         self.botname = kwargs.get("botname", "ChatAI")
         self.seed = kwargs.get("seed", random.randint(0, 100000))
         self.chat_type = kwargs.get("chat_type", "normal")
-        self.properties = self.prompt_settings["chat"][self.chat_type]
         self._dialogue = kwargs.get("dialogue", [])
         self._summaries = kwargs.get("summaries", [])
 
@@ -591,3 +573,62 @@ class Conversation:
             skip_special_tokens=True)
         summary = results
         self.update_summary(summary)
+
+
+class InterestingConversation(Conversation):
+    settings = {
+        "max_length": 512,
+        "min_length": 0,
+        "num_beams": 3,
+        "temperature": 1.2,
+        "top_k": 120,
+        "top_p": 0.9,
+        "repetition_penalty": 2.0,
+        "length_penalty": 0.1,
+        "no_repeat_ngram_size": 2,
+        "num_return_sequences": 1,
+    }
+
+
+class WildConversation(Conversation):
+    settings = {
+        "max_length": 512,
+        "min_length": 0,
+        "num_beams": 3,
+        "temperature": 2.0,
+        "top_k": 200,
+        "top_p": 0.9,
+        "repetition_penalty": 2.0,
+        "length_penalty": 0.1,
+        "no_repeat_ngram_size": 2,
+        "num_return_sequences": 1,
+    }
+
+
+class ChatAIConversation(Conversation):
+    def __init__(self, **kwargs):
+        super().__init__(
+            client=kwargs.get("client"),
+            username=None,
+            botname="ChatAI",
+            seed=kwargs.get("seed"),
+        )
+
+    def handle_request(self, **kwargs):
+        data = kwargs.get("data", {})
+        user_input = data.get("user_input", None)
+        properties = data["properties"]
+        properties["skip_special_tokens"] = kwargs.pop("skip_special_tokens", False)
+        response = self.llm_runner.generate(
+            user_input,
+            **properties
+        )
+        self.llm_runner.set_message({
+            "type": "response",
+            "response": response
+        })
+
+    def send_user_message(self, action, message):
+        if action != "action":
+            self.add_user_message(message)
+        print("setting client message")

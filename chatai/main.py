@@ -1,6 +1,5 @@
 from aihandler.settings import LOG_LEVEL
 import logging
-from aihandler.runner import SDRunner
 logging.getLogger('h5py._conv').setLevel(LOG_LEVEL)
 logging.getLogger('tensorflow').setLevel(LOG_LEVEL)
 import os
@@ -56,6 +55,7 @@ class Launcher(QApplication):
 
     def launch_chatbot(self, client):
         self.ui.close()
+        print("launch chatbotwindow")
         ChatbotWindow(parent=self, client=client)
 
     def show(self):

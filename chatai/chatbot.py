@@ -16,6 +16,11 @@ class ChatbotWindow(LLMWindow):
     chat_type = "interesting"
     model_name = "flan-t5-xl"
 
+    def __init__(self, *args, **kwargs):
+        self.version = pkg_resources.require("chatairunner")[0].version
+        self.seed = random.randint(0, 1000000)
+        super().__init__(*args, **kwargs)
+
     @property
     def username(self):
         return self.ui.username.text()
@@ -50,10 +55,11 @@ class ChatbotWindow(LLMWindow):
         self.stop_progress_bar()
         self.chatbot_result_queue.put((response["text"], response["botname"]))
 
-    def __init__(self, *args, **kwargs):
-        self.version = pkg_resources.require("chatairunner")[0].version
-        self.seed = random.randint(0, 1000000)
-        super().__init__(*args, **kwargs)
+    @staticmethod
+    def advanced_settings():
+        HERE = os.path.dirname(os.path.abspath(__file__))
+        advanced_settings_window = uic.loadUi(os.path.join(HERE, "pyqt/advanced_settings.ui"))
+        advanced_settings_window.exec()
 
     def message_handler(self, *args, **kwargs):
         message = args[0]["response"]
@@ -94,12 +100,20 @@ class ChatbotWindow(LLMWindow):
         self.ui.show()
 
     def initialize_name_inputs(self):
-        self.ui.username.textChanged.connect(self.update_conversation_names)
-        self.ui.botname.textChanged.connect(self.update_conversation_names)
+        self.ui.username.textChanged.connect(
+            lambda val: self.update_conversation_names("user", val)
+        )
 
-    def update_conversation_names(self):
-        self.conversation.username = self.username
-        self.conversation.botname = self.botname
+        self.ui.botname.textChanged.connect(
+            lambda val: self.update_conversation_names("bot", val)
+        )
+
+    @pyqtSlot(str, str)
+    def update_conversation_names(self, usertype, username):
+        if usertype == "user":
+            self.conversation.username = username
+        else:
+            self.conversation.botname = username
 
     def initilize_action_dropdown(self):
         actions = ["chat", "action"]
@@ -153,12 +167,6 @@ class ChatbotWindow(LLMWindow):
     def switch_model(self, model):
         self.model_name = model
         self.conversation.model_name = self.model_name
-
-    @staticmethod
-    def advanced_settings():
-        HERE = os.path.dirname(os.path.abspath(__file__))
-        advanced_settings_window = uic.loadUi(os.path.join(HERE, "pyqt/advanced_settings.ui"))
-        advanced_settings_window.exec()
 
     def about(self):
         # display pyqt/about.ui popup window
@@ -234,14 +242,13 @@ class ChatbotWindow(LLMWindow):
 
 
 if __name__ == '__main__':
-    if __name__ == '__main__':
-        class Runner(QApplication):
-            def __init__(self, args):
-                super().__init__(args)
-                self.main_window = ChatbotWindow(client=None, parent=self)
-                self.exec()
+    class Runner(QApplication):
+        def __init__(self, args):
+            super().__init__(args)
+            self.main_window = ChatbotWindow(client=None, parent=self)
+            self.exec()
 
-            def show(self):
-                pass
+        def show(self):
+            pass
 
-        Runner([])
+    Runner([])
