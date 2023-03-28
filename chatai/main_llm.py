@@ -1,3 +1,4 @@
+import pkg_resources
 import json
 import os
 import random
@@ -10,7 +11,7 @@ from aihandler.settings import TEXT_MODELS
 from aihandler.llmrunner import LLMRunner
 from settings_manager import SettingsManager
 from aihandler.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
-from settings import VERSION
+from conversation import ChatAIConversation
 
 
 class LLMWindow(QMainWindow):
@@ -92,22 +93,22 @@ class LLMWindow(QMainWindow):
         return seed
 
     def generate(self):
-        seed = self.get_seed()
-        properties = self.prep_properties()
         prompt = self.ui.generated_text.toPlainText()
+        action = "generate"
         self.client.message = {
             "action": "llm",
-            "type": "generate",
+            "type": action,
             "data": {
                 "user_input": prompt,
-                "seed": seed,
-                "properties": properties,
-                "skip_special_tokens": False
+                "prompt": None,
+                "username": self.conversation.username,
+                "botname": self.conversation.botname,
+                "seed": self.seed,
+                "conversation": self,
+                "properties": self.conversation.properties,
             }
-
         }
-        # self.stop_progress_bar()
-        # self.enable_generate_button()
+        print(prompt)
 
     def start_progress_bar(self):
         self.ui.progressBar.setValue(0)
@@ -133,6 +134,7 @@ class LLMWindow(QMainWindow):
         super().__init__(*args, **kwargs)
         if self.client is None:
             self.initialize_offline_client()
+        self.conversation = ChatAIConversation(client=self.client)
         self.client.tqdm_var.my_signal.connect(self.tqdm_callback)
         self.client.message_var.my_signal.connect(self.message_handler)
         self.client.error_var.my_signal.connect(self.error_handler)
@@ -202,8 +204,7 @@ class MainWindow(LLMWindow):
 
     def handle_value_change(self, value_name, value, widget_name):
         self.ui.__getattribute__(widget_name).setValue(value)
-        if self.chatbot_window:
-            self.chatbot_window.properties[value_name] = value
+        self.conversation.properties[value_name] = value
 
     def initialize_form(self):
         # initialize sliders and spinboxes
@@ -238,7 +239,6 @@ class MainWindow(LLMWindow):
         self.ui.seed.setPlainText(str(random.randint(0, 1000000)))
 
         # on generate_button clicked
-        print("INITIALIZING GENERATE BUTTON")
         self.ui.generate_button.clicked.connect(self.handle_generate)
 
         self.ui.actionNew.triggered.connect(self.handle_new)
@@ -252,7 +252,8 @@ class MainWindow(LLMWindow):
         # set default to settings_manager.settings.model_name
         self.ui.model_dropdown.setCurrentText(self.settings_manager.settings.model_name.get())
 
-        self.ui.setWindowTitle("Chat AI v{}".format(VERSION))
+        version = pkg_resources.require("chatairunner")[0].version
+        self.ui.setWindowTitle("Chat AI v{}".format(version))
 
     def disable_generate_button(self):
         self.ui.generate_button.setEnabled(False)

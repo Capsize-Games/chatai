@@ -1,16 +1,12 @@
-import settings
+from aihandler.settings import LOG_LEVEL
 import logging
-
-from aihandler.runner import SDRunner
-
-logging.getLogger('h5py._conv').setLevel(settings.LOG_LEVEL)
-logging.getLogger('tensorflow').setLevel(settings.LOG_LEVEL)
+logging.getLogger('h5py._conv').setLevel(LOG_LEVEL)
+logging.getLogger('tensorflow').setLevel(LOG_LEVEL)
 import os
 from PyQt6 import uic
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtWidgets import QApplication
 from aihandler.pyqt_offline_client import OfflineClient
-from aihandler.llmrunner import LLMRunner
 from chatbot import ChatbotWindow
 from main_llm import MainWindow
 from aihandler.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
@@ -42,8 +38,8 @@ class Launcher(QApplication):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # silent h5py._conv logging
-        uic.properties.logger.setLevel(settings.LOG_LEVEL)
-        uic.uiparser.logger.setLevel(settings.LOG_LEVEL)
+        uic.properties.logger.setLevel(LOG_LEVEL)
+        uic.uiparser.logger.setLevel(LOG_LEVEL)
         self.tqdm_var = TQDMVar()
         self.message_var = MessageHandlerVar()
         self.error_var = ErrorHandlerVar()
@@ -52,14 +48,14 @@ class Launcher(QApplication):
             tqdm_var=self.tqdm_var,
             message_var=self.message_var,
             error_var=self.error_var,
-            runners=[LLMRunner, SDRunner],
-            log_level=settings.LOG_LEVEL
+            log_level=LOG_LEVEL
         )
         self.load_template()
         self.exec()
 
     def launch_chatbot(self, client):
         self.ui.close()
+        print("launch chatbotwindow")
         ChatbotWindow(parent=self, client=client)
 
     def show(self):
