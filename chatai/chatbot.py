@@ -1,3 +1,4 @@
+import pkg_resources
 import os
 import queue
 import random
@@ -6,7 +7,6 @@ from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtWidgets import QFileDialog, QApplication
 from conversation import Conversation
 from main_llm import LLMWindow
-from settings import VERSION
 
 
 class ChatbotWindow(LLMWindow):
@@ -91,7 +91,8 @@ class ChatbotWindow(LLMWindow):
         self.connect_send_pressed()
         self.initialize_buttons()
         self.initialiizse_toolbar()
-        self.ui.setWindowTitle(f"Chat AI v{VERSION}")
+        version = pkg_resources.require("chatairunner")[0].version
+        self.ui.setWindowTitle(f"Chat AI v{version}")
         self.ui.generated_text.setReadOnly(True)
         self.center()
         self.ui.show()

@@ -1,10 +1,8 @@
-import settings
+from aihandler.settings import LOG_LEVEL
 import logging
-
 from aihandler.runner import SDRunner
-
-logging.getLogger('h5py._conv').setLevel(settings.LOG_LEVEL)
-logging.getLogger('tensorflow').setLevel(settings.LOG_LEVEL)
+logging.getLogger('h5py._conv').setLevel(LOG_LEVEL)
+logging.getLogger('tensorflow').setLevel(LOG_LEVEL)
 import os
 from PyQt6 import uic
 from PyQt6.QtGui import QGuiApplication
@@ -42,8 +40,8 @@ class Launcher(QApplication):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # silent h5py._conv logging
-        uic.properties.logger.setLevel(settings.LOG_LEVEL)
-        uic.uiparser.logger.setLevel(settings.LOG_LEVEL)
+        uic.properties.logger.setLevel(LOG_LEVEL)
+        uic.uiparser.logger.setLevel(LOG_LEVEL)
         self.tqdm_var = TQDMVar()
         self.message_var = MessageHandlerVar()
         self.error_var = ErrorHandlerVar()
@@ -53,7 +51,7 @@ class Launcher(QApplication):
             message_var=self.message_var,
             error_var=self.error_var,
             runners=[LLMRunner, SDRunner],
-            log_level=settings.LOG_LEVEL
+            log_level=LOG_LEVEL
         )
         self.load_template()
         self.exec()

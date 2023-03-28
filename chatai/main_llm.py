@@ -1,3 +1,4 @@
+import pkg_resources
 import json
 import os
 import random
@@ -10,7 +11,6 @@ from aihandler.settings import TEXT_MODELS
 from aihandler.llmrunner import LLMRunner
 from settings_manager import SettingsManager
 from aihandler.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
-from settings import VERSION
 
 
 class LLMWindow(QMainWindow):
@@ -252,7 +252,8 @@ class MainWindow(LLMWindow):
         # set default to settings_manager.settings.model_name
         self.ui.model_dropdown.setCurrentText(self.settings_manager.settings.model_name.get())
 
-        self.ui.setWindowTitle("Chat AI v{}".format(VERSION))
+        version = pkg_resources.require("chatairunner")[0].version
+        self.ui.setWindowTitle("Chat AI v{}".format(version))
 
     def disable_generate_button(self):
         self.ui.generate_button.setEnabled(False)
