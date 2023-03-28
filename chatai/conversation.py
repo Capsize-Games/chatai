@@ -30,7 +30,7 @@ character_prompts = [
 ]
 
 class Conversation:
-    model_name = "flan-t5-xxl"
+    model_name = "flan-t5-xl"
     client: OfflineClient = None
     username: str = ""
     botname: str = ""
