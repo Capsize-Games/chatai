@@ -224,7 +224,19 @@
      <string>Personalities</string>
     </property>
    </widget>
+   <widget class="QMenu" name="menuSettings">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="actionFlan_T5_Small"/>
+    <addaction name="actionFlan_T5_Base"/>
+    <addaction name="actionFlan_T5_Large"/>
+    <addaction name="actionFlan_T5_XL"/>
+    <addaction name="actionFlan_T5_XXL"/>
+    <addaction name="actionFlan_T5_UL"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuSettings"/>
    <addaction name="menuPersonalities"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -277,6 +289,54 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+N</string>
+   </property>
+  </action>
+  <action name="actionFlan_T5_Small">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Flan-T5-Small</string>
+   </property>
+  </action>
+  <action name="actionFlan_T5_Base">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Flan-T5-Base</string>
+   </property>
+  </action>
+  <action name="actionFlan_T5_Large">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Flan-T5-Large</string>
+   </property>
+  </action>
+  <action name="actionFlan_T5_XL">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Flan-T5-XL</string>
+   </property>
+  </action>
+  <action name="actionFlan_T5_XXL">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Flan-T5-XXL</string>
+   </property>
+  </action>
+  <action name="actionFlan_T5_UL">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Flan-T5-UL</string>
    </property>
   </action>
  </widget>

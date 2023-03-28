@@ -27,6 +27,7 @@ character_prompts = [
 ]
 
 class Conversation:
+    model_name = "flan-t5-xl"
     client: OfflineClient = None
     username: str = ""
     botname: str = ""
@@ -169,7 +170,7 @@ class Conversation:
             "length_penalty": self.properties["length_penalty"],
             "no_repeat_ngram_size": self.properties["no_repeat_ngram_size"],
             "num_return_sequences": self.properties["num_return_sequences"],
-            "model": self.properties["model"],
+            "model": self.model_name,
         }
 
     def send_generate_characters_message(self):
