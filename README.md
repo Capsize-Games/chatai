@@ -1,6 +1,12 @@
 [![Banner](banner.png)](https://capsizegames.itch.io/chat-ai)
-
 [![Upload Python Package](https://github.com/Capsize-Games/chatai/actions/workflows/python-publish.yml/badge.svg)](https://github.com/Capsize-Games/chatai/actions/workflows/python-publish.yml)
+[![Discord](https://img.shields.io/discord/839511291466219541?color=5865F2&logo=discord&logoColor=white)](https://discord.gg/PUVDDCJ7gz)
+![GitHub](https://img.shields.io/github/license/Capsize-Games/chatai)
+![GitHub last commit](https://img.shields.io/github/last-commit/Capsize-Games/chatai)
+![GitHub issues](https://img.shields.io/github/issues/Capsize-Games/chatai)
+![GitHub closed issues](https://img.shields.io/github/issues-closed/Capsize-Games/chatai)
+![GitHub pull requests](https://img.shields.io/github/issues-pr/Capsize-Games/chatai)
+![GitHub closed pull requests](https://img.shields.io/github/issues-pr-closed/Capsize-Games/chatai)
 
 # Chat AI: Run LLMs with your own hardware
 
