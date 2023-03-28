@@ -54,3 +54,14 @@ Use this installation method if you intend to modify the source code of Chat AI.
 3. `cd chatai && pip install -e .`
 4. `cd chatai && python main.py`
 
+---
+
+Here are the special tokens used by the model:
+
+- <pad>: Used to pad sequences to a fixed length.
+- <bos>: Beginning of sequence token, used to indicate the start of a sequence.
+- <eos>: End of sequence token, used to indicate the end of a sequence.
+- <unk>: Unknown token, used to represent out-of-vocabulary words.
+- <mask>: Mask token, used for masked language modeling tasks.
+- <extra_id_X>: Special token used to represent additional task-specific labels, where X is a number from 0 to 99.
+- <eot>: End of turn token, used in conversation models to indicate the end of a speaker's turn.
