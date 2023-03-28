@@ -1,6 +1,7 @@
 import json
 import random
 from aihandler.pyqt_offline_client import OfflineClient
+from aihandler.llmrunner import LLMRunner
 
 
 choices = ['book', 'movie', 'tv show']
@@ -53,7 +54,6 @@ class Conversation:
                 "length_penalty": 1.0,
                 "no_repeat_ngram_size": 1,
                 "num_return_sequences": 1,
-                "model": "flan-t5-xl",
             },
             "interesting": {
                 "max_length": 512,
@@ -66,7 +66,6 @@ class Conversation:
                 "length_penalty": 0.1,
                 "no_repeat_ngram_size": 2,
                 "num_return_sequences": 1,
-                "model": "flan-t5-xl",
             },
             "wild": {
                 "max_length": 512,
@@ -79,7 +78,6 @@ class Conversation:
                 "length_penalty": 0.1,
                 "no_repeat_ngram_size": 2,
                 "num_return_sequences": 1,
-                "model": "flan-t5-xl",
             }
         }
     }
@@ -107,9 +105,14 @@ class Conversation:
 
 
     def _initialize(self, client=None, **kwargs):
-        if client:
-            self.client = client
-            self.llm_runner = client.llm_runner
+        self.client = client
+        client.llm_request_handler = self.request_handler
+        self.llm_runner = LLMRunner(
+            app=client,
+            tqdm_var=client.tqdm_var,
+            image_var=client.image_var,
+            message_var=client.message_var
+        )
         self.conversation_summary = ""
         self.username = kwargs.get("username", "User")
         self.botname = kwargs.get("botname", "ChatAI")
@@ -421,6 +424,33 @@ class Conversation:
             "botname": self.botname,
             "response": f"{self.botname} is dead"
         }
+
+    def handle_request(self, **kwargs):
+        data = kwargs.get("data", {})
+        req_type = kwargs["type"]
+        user_input = data.get("user_input", None)
+        if req_type == "chat":
+            self.generate_bot_response()
+        elif req_type == "action":
+            self.generate_reaction(user_input)
+        elif req_type == "generate_characters":
+            self.do_generate_characters()
+        else:
+            properties = data["properties"]
+            properties["skip_special_tokens"] = kwargs.pop("skip_special_tokens", False)
+            response = self.llm_runner.generate(
+                user_input,
+                **properties
+            )
+            self.llm_runner.set_message({
+                "type": "response",
+                "response": response
+            })
+
+    def request_handler(self, **kwargs):
+        if not self.llm_runner:
+            raise Exception("LLMRunner not initialized")
+        self.handle_request(**kwargs)
 
     def generate_bot_response(self):
         if self.do_summary:

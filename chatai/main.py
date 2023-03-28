@@ -8,7 +8,6 @@ from PyQt6 import uic
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtWidgets import QApplication
 from aihandler.pyqt_offline_client import OfflineClient
-from aihandler.llmrunner import LLMRunner
 from chatbot import ChatbotWindow
 from main_llm import MainWindow
 from aihandler.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
@@ -50,7 +49,6 @@ class Launcher(QApplication):
             tqdm_var=self.tqdm_var,
             message_var=self.message_var,
             error_var=self.error_var,
-            runners=[LLMRunner, SDRunner],
             log_level=LOG_LEVEL
         )
         self.load_template()
