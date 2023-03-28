@@ -11,7 +11,7 @@ from aihandler.settings import TEXT_MODELS
 from aihandler.llmrunner import LLMRunner
 from settings_manager import SettingsManager
 from aihandler.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
-from conversation import ChatAIConversation
+from chatai.conversation import ChatAIConversation
 
 
 class LLMWindow(QMainWindow):
