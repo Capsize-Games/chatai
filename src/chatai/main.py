@@ -7,8 +7,8 @@ from PyQt6 import uic
 from PyQt6.QtGui import QGuiApplication
 from PyQt6.QtWidgets import QApplication
 from aihandler.pyqt_offline_client import OfflineClient
-from chatbot import ChatbotWindow
-from main_llm import MainWindow
+from chatai.chatbot import ChatbotWindow
+from chatai.main_llm import MainWindow
 from aihandler.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
 
 
