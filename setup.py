@@ -11,8 +11,8 @@ setup(
     license="AGPL-3.0",
     author_email="contact@capsize.gg",
     url="https://github.com/w4ffl35/chat-ai",
-    package_dir={"": "chatai"},
-    packages=find_packages("chatai"),
+    package_dir={"": "src"},
+    packages=find_packages("src"),
     include_package_data=True,
     python_requires=">=3.10.0",
     install_requires=[
