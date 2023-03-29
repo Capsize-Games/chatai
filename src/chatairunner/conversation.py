@@ -88,14 +88,15 @@ class Conversation:
 
 
     def _initialize(self, client=None, **kwargs):
-        self.client = client
-        client.llm_request_handler = self.request_handler
-        self.llm_runner = LLMRunner(
-            app=client,
-            tqdm_var=client.tqdm_var,
-            image_var=client.image_var,
-            message_var=client.message_var
-        )
+        if client:
+            self.client = client
+            client.llm_request_handler = self.request_handler
+            self.llm_runner = LLMRunner(
+                app=client,
+                tqdm_var=client.tqdm_var,
+                image_var=client.image_var,
+                message_var=client.message_var
+            )
         self.conversation_summary = ""
         self.username = kwargs.get("username", "User")
         self.botname = kwargs.get("botname", "ChatAI")

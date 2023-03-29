@@ -1,4 +1,3 @@
-import pkg_resources
 import os
 import queue
 import random
@@ -17,7 +16,6 @@ class ChatbotWindow(LLMWindow):
     model_name = "flan-t5-xl"
 
     def __init__(self, *args, **kwargs):
-        self.version = pkg_resources.require("chatairunner")[0].version
         self.seed = random.randint(0, 1000000)
         super().__init__(*args, **kwargs)
 
@@ -94,7 +92,7 @@ class ChatbotWindow(LLMWindow):
         self.connect_send_pressed()
         self.initialize_buttons()
         self.initialiizse_toolbar()
-        self.ui.setWindowTitle(f"Chat AI v{self.version}")
+        self.ui.setWindowTitle(f"Chat AI")
         self.ui.generated_text.setReadOnly(True)
         self.center()
         self.ui.show()
@@ -173,7 +171,7 @@ class ChatbotWindow(LLMWindow):
         HERE = os.path.dirname(os.path.abspath(__file__))
         about_window = uic.loadUi(os.path.join(HERE, "pyqt/about.ui"))
         about_window.setWindowTitle(f"About Chat AI")
-        about_window.title.setText(f"Chat AI v{self.version}")
+        about_window.title.setText(f"Chat AI")
         about_window.exec()
 
     def new_conversation(self):
