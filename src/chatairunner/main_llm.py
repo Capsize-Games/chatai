@@ -1,4 +1,3 @@
-import pkg_resources
 import json
 import os
 import random
@@ -157,7 +156,7 @@ class LLMWindow(QMainWindow):
 
     def load_template(self):
         HERE = os.path.dirname(os.path.abspath(__file__))
-        self.ui = uic.loadUi(os.path.join(os.path.join(HERE, f"pyqt/{self.template}.ui")))
+        self.ui = uic.loadUi(os.path.join(HERE, f"pyqt/{self.template}.ui"))
         # self.ui.setWindowIcon(QIcon('./assets/icon.png'))
 
     def tqdm_callback(self, *args, **kwargs):
@@ -252,8 +251,7 @@ class MainWindow(LLMWindow):
         # set default to settings_manager.settings.model_name
         self.ui.model_dropdown.setCurrentText(self.settings_manager.settings.model_name.get())
 
-        version = pkg_resources.require("chatairunner")[0].version
-        self.ui.setWindowTitle("Chat AI v{}".format(version))
+        self.ui.setWindowTitle("Chat AI")
 
     def disable_generate_button(self):
         self.ui.generate_button.setEnabled(False)
