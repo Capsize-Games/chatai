@@ -17,7 +17,7 @@ class ChatbotWindow(LLMWindow):
     model_name = "flan-t5-xl"
 
     def __init__(self, *args, **kwargs):
-        self.version = pkg_resources.require("chatairunner")[0].version
+        self.version = pkg_resources.require("chatai")[0].version
         self.seed = random.randint(0, 1000000)
         super().__init__(*args, **kwargs)
 
