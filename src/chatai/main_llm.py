@@ -252,7 +252,7 @@ class MainWindow(LLMWindow):
         # set default to settings_manager.settings.model_name
         self.ui.model_dropdown.setCurrentText(self.settings_manager.settings.model_name.get())
 
-        version = pkg_resources.require("chatai")[0].version
+        version = pkg_resources.require("chatairunner")[0].version
         self.ui.setWindowTitle("Chat AI v{}".format(version))
 
     def disable_generate_button(self):
