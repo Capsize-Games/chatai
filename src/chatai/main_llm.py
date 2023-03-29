@@ -9,7 +9,7 @@ from PyQt6.QtGui import QGuiApplication
 from aihandler.pyqt_offline_client import OfflineClient
 from aihandler.settings import TEXT_MODELS
 from aihandler.llmrunner import LLMRunner
-from settings_manager import SettingsManager
+from chatai.settings_manager import SettingsManager
 from aihandler.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
 from chatai.conversation import ChatAIConversation
 
