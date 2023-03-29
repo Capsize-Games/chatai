@@ -5,8 +5,8 @@ import random
 from PyQt6 import uic
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtWidgets import QFileDialog, QApplication
-from chatai.conversation import Conversation
-from chatai.main_llm import LLMWindow
+from chatairunner.conversation import Conversation
+from chatairunner.main_llm import LLMWindow
 
 
 class ChatbotWindow(LLMWindow):
