@@ -90,14 +90,17 @@ class BaseWindow(QMainWindow):
         return seed
 
     def generate(self):
-        prompt = self.ui.generated_text.toPlainText()
         action = "generate"
+        userinput = " ".join([
+            self.ui.generated_text.toPlainText(),
+            self.ui.prefix.toPlainText(),
+            self.ui.prompt.toPlainText(),
+        ])
         self.client.message = {
             "action": "llm",
             "type": action,
             "data": {
-                "user_input": prompt,
-                "prompt": None,
+                "user_input": userinput,
                 "username": self.conversation.username,
                 "botname": self.conversation.botname,
                 "seed": self.seed,

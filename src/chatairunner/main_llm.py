@@ -117,7 +117,6 @@ class MainWindow(BaseWindow):
             # current values
             if filename.lower().endswith(".json"):
                 with open(filename, "rb") as f:
-                    # load properties
                     properties = json.load(f)
                     self.ui.max_length_spinbox.setValue(properties["max_length"])
                     self.ui.min_length_spinbox.setValue(properties["min_length"])

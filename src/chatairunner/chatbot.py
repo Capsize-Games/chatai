@@ -80,6 +80,7 @@ class ChatbotWindow(BaseWindow):
     def initialize_form(self):
         self.conversation = Conversation(
             client=self.client,
+            parent=self,
             username=self.username,
             botname=self.botname,
             chat_type=self.chat_type
@@ -96,6 +97,13 @@ class ChatbotWindow(BaseWindow):
         self.ui.generated_text.setReadOnly(True)
         self.center()
         self.ui.show()
+
+    def update_form(self):
+        self.ui.username.setText(self.conversation.username)
+        self.ui.botname.setText(self.conversation.botname)
+        self.ui.generated_text.clear()
+        self.ui.generated_text.appendPlainText(self.conversation.dialogue)
+        self.ui.prompt.setFocus()
 
     def initialize_name_inputs(self):
         self.ui.username.textChanged.connect(

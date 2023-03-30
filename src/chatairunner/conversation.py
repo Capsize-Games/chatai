@@ -68,6 +68,7 @@ class Conversation:
         :keyword seed:int The seed for the random number generator
         :keyword properties:dict The properties for the model
         """
+        self.parent = kwargs.get("parent")
         threading.Thread(target=self._initialize, args=(client,), kwargs=kwargs).start()
         #self._initialize(client, **kwargs)  # Initialize the conversation
 
@@ -134,11 +135,12 @@ class Conversation:
     def load(self, filename: str):
         with open(filename, "r") as f:
             data = json.loads(f.read())
-            self.username.setText(data["username"])
-            self.botname.setText(data["botname"])
+            self.username = data["username"]
+            self.botname = data["botname"]
             self.dialogue = data["conversation"]
             self.new_seed(data["seed"])
             self.properties = data["properties"]
+            self.parent.update_form()
 
     def prep_properties(self, properties):
         return {
