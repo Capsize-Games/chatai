@@ -56,8 +56,7 @@ class ChatbotWindow(BaseWindow):
 
     @staticmethod
     def advanced_settings():
-        HERE = os.path.dirname(os.path.abspath(__file__))
-        advanced_settings_window = uic.loadUi(os.path.join(HERE, "pyqt/advanced_settings.ui"))
+        advanced_settings_window = uic.loadUi("pyqt/advanced_settings.ui")
         advanced_settings_window.exec()
 
     def message_handler(self, *args, **kwargs):
@@ -169,8 +168,7 @@ class ChatbotWindow(BaseWindow):
 
     def about(self):
         # display pyqt/about.ui popup window
-        HERE = os.path.dirname(os.path.abspath(__file__))
-        about_window = uic.loadUi(os.path.join(HERE, "pyqt/about.ui"))
+        about_window = uic.loadUi("pyqt/about.ui")
         about_window.setWindowTitle(f"About Chat AI")
         about_window.title.setText(f"Chat AI")
         about_window.exec()

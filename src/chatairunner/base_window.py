@@ -153,8 +153,7 @@ class BaseWindow(QMainWindow):
         pass
 
     def load_template(self):
-        HERE = os.path.dirname(os.path.abspath(__file__))
-        self.ui = uic.loadUi(os.path.join(HERE, f"pyqt/{self.template}.ui"))
+        self.ui = uic.loadUi(f"pyqt/{self.template}.ui")
         # self.ui.setWindowIcon(QIcon('./assets/icon.png'))
 
     def tqdm_callback(self, *args, **kwargs):
