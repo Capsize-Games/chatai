@@ -49,11 +49,7 @@ class MainWindow(BaseWindow):
         self.conversation.properties[value_name] = value
 
     def initialize_form(self):
-        # initialize sliders and spinboxes
-        # set default values
         self.set_form_defaults()
-
-        # integers first
         self.ui.max_length_slider.valueChanged.connect(lambda val: self.handle_value_change("max_length", val, "max_length_spinbox"))
         self.ui.max_length_spinbox.valueChanged.connect(lambda val: self.handle_value_change("max_length", val, "max_length_slider"))
         self.ui.min_length_slider.valueChanged.connect(lambda val: self.handle_value_change("min_length", val, "min_length_spinbox"))
@@ -66,8 +62,6 @@ class MainWindow(BaseWindow):
         self.ui.no_repeat_ngram_size_spinbox.valueChanged.connect(lambda val: self.handle_value_change("no_repeat_ngram_size", val, "no_repeat_ngram_size_slider"))
         self.ui.num_return_sequences_slider.valueChanged.connect(lambda val: self.handle_value_change("num_return_sequences", val, "num_return_sequences_spinbox"))
         self.ui.num_return_sequences_spinbox.valueChanged.connect(lambda val: self.handle_value_change("num_return_sequences", val, "num_return_sequences_slider"))
-
-        # now floats converting to int (1000 / 100 for float)
         self.ui.top_p_spinbox.valueChanged.connect(lambda val: self.handle_value_change("top_p", int(self.ui.top_p_spinbox.value() * 100), "top_p_slider"))
         self.ui.top_p_slider.valueChanged.connect(lambda val: self.handle_value_change("top_p", self.ui.top_p_slider.value() / 100, "top_p_spinbox"))
         self.ui.repetition_penalty_spinbox.valueChanged.connect(lambda val: self.handle_value_change("repetition_penalty", int(self.ui.repetition_penalty_spinbox.value() * 100), "repetition_penalty_slider"))
@@ -83,14 +77,16 @@ class MainWindow(BaseWindow):
         # on generate_button clicked
         self.ui.generate_button.clicked.connect(self.handle_generate)
 
+        # menu bar
         self.ui.actionNew.triggered.connect(self.handle_new)
         self.ui.actionSave.triggered.connect(self.handle_save)
         self.ui.actionLoad.triggered.connect(self.handle_load)
         self.ui.actionQuit.triggered.connect(self.handle_quit)
 
-        # iterate over MODELS dict
+        # mdoels dropdown
         for model_name, model_data in TEXT_MODELS.items():
             self.ui.model_dropdown.addItem(model_name)
+
         # set default to settings_manager.settings.model_name
         self.ui.model_dropdown.setCurrentText(self.settings_manager.settings.model_name.get())
 
