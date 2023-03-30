@@ -4,11 +4,12 @@ import random
 from PyQt6 import uic
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtWidgets import QFileDialog, QApplication
+
+from chatairunner.base_window import BaseWindow
 from chatairunner.conversation import Conversation
-from chatairunner.main_llm import LLMWindow
 
 
-class ChatbotWindow(LLMWindow):
+class ChatbotWindow(BaseWindow):
     template = "chatbot"
     chatbot_result_queue = queue.Queue()
     conversation: Conversation = None
