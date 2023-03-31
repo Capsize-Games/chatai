@@ -28,6 +28,7 @@ character_prompts = [
     f"famous {random.choice(choices_b)}",
 ]
 
+
 class Conversation:
     model_name = "flan-t5-xl"
     client: OfflineClient = None
@@ -246,11 +247,6 @@ class Conversation:
         )
         return username
 
-    def strip_special_characters(self, string):
-        for special_character in self.special_characters:
-            string = string.replace(special_character, "")
-        return string
-
     def summary_prompt(self):
         # print("Summarizing")
         # self.app.runner.load_summarizer()
@@ -284,31 +280,6 @@ class Conversation:
             "username": username,
             "response": action
         }
-
-    def send_user_message(self, action, message):
-        print("send_user_message", action, message)
-        print("send_user_message")
-        if action != "action":
-            self.add_user_message(message)
-        self.client.message = {
-            "action": "llm",
-            "type": action,
-            "data": {
-                "user_input": message,
-                "prompt": None,
-                "username": self.username,
-                "botname": self.botname,
-                "seed": self.seed,
-                "conversation": self,
-                "properties": self.properties,
-            }
-        }
-
-    def add_user_message(self, message):
-        self.add_message(self.username, message)
-
-    def add_bot_message(self, message):
-        self.add_message(self.botname, message)
 
     def add_message(self, username, message):
         self._dialogue.append({
@@ -360,28 +331,10 @@ class Conversation:
         return prompt
 
     def generate_response_prompt(self, mood, user_sentiment):
-        return self.generate_prompt(f"{self.botname} says", mood, user_sentiment)
-
-    def generate_summary_prompt(self, mood, user_sentiment):
-        return self.generate_prompt(f"Generate a summary:", mood, user_sentiment)
-
-    def generate_emotional_state_prompt(self, user, mood, user_sentiment):
-        return self.generate_prompt(f"What is the emotional state of {user}:", mood, user_sentiment)
-
-    def generate_mood_prompt(self, mood, user_sentiment):
-        return self.generate_prompt(f"What is the mood of {self.botname}:", mood, user_sentiment)
-
-    def format_bot_alive_prompt(self):
-        return self.generate_prompt(f"{self.conversation_summary}\n\n{self.dialogue}<extra_id_0>Is {self.botname} still alive, yes or no? </s>")
-
-    def generate_sentiment_prompt(self, user, mood, user_sentiment):
-        return self.generate_prompt(f"What is the sentiment of {user}:", mood, user_sentiment)
+        return self.generate_prompt(f"{self.botname} says: ", mood, user_sentiment)
 
     def generate_reaction_prompt(self, mood=None, user_sentiment=None):
         return self.generate_prompt(f"Describe what happens next", mood, user_sentiment)
-
-    def generate_random_prompt(self, mood, user_sentiment):
-        return self.generate_prompt(f"Generate a random event:", mood, user_sentiment)
 
     def premise(self):
         # mean_bot = f"{self.botname} hates {self.username}. {self.botname} is very mean. {self.botname} uses sarcasm, rude responses, curse words and hate speech. Everything {self.botname} says is mean. {self.botname} is hateful."
@@ -392,23 +345,6 @@ class Conversation:
         bot_personality = ""
         result = f"{self.username} and {self.botname} are talking, you will respond as {self.botname}."
         return result
-
-    def format_random_prompt(self, mood, user_sentiment, random_prompt):
-        prompt = f"{self.premise()}\n\n{self.conversation_summary}\n<extra_id_0>Generate a random event that could happen next. <extra_id_1>{random_prompt}: "
-        return prompt
-
-    def format_conversation(self, user_name):
-        pass
-
-    def get_bot_mood_prompt(self):
-        return f"{self.premise()}\n{self.conversation_summary}\n\n{self.dialogue}\n\n{self.botname}'s mood is "
-
-    def send_user_is_dead_message(self):
-        self.response = {
-            "type": "action",
-            "botname": self.botname,
-            "response": f"{self.botname} is dead"
-        }
 
     def handle_request(self, **kwargs):
         data = kwargs.get("data", {})
@@ -436,28 +372,6 @@ class Conversation:
         if not self.llm_runner:
             raise Exception("LLMRunner not initialized")
         self.handle_request(**kwargs)
-
-    def generate_bot_response(self):
-        if self.do_summary:
-            self.summarize()
-        if not self.is_bot_alive:
-            self.send_user_is_dead_message()
-            return
-        bot_mood = self.get_bot_mood()
-        user_sentiment = self.get_user_sentiment()
-        bot_response = self.get_bot_response(bot_mood, user_sentiment)
-        self.add_bot_message(bot_response)
-
-    def get_user_reaction(self):
-        action_prompt = self.generate_reaction_prompt()
-        reaction = self.llm_runner.generate(
-            action_prompt,
-            seed=self.seed,
-            **self.properties,
-            return_result=True,
-            skip_special_tokens=True
-        )
-        return reaction
 
     def generate_reaction(self, user_input):
         if self.do_summary:
@@ -494,21 +408,45 @@ class Conversation:
         string = string.replace('"', '')
         return string
 
-    def get_bot_response(self, bot_mood: str, user_sentiment: str):
-        properties = self.properties.copy()
-        properties["top_k"] = 70
-        properties["top_p"] = 1.0
-        properties["num_beams"] = 8
-        properties["repetition_penalty"] = 100.0
-        properties["early_stopping"] = True
-        properties["max_length"] = 512
-        properties["min_length"] = 0
-        properties["temperature"] = 1.75
-        properties["skip_special_tokens"] = False
-        prompt = self.generate_response_prompt(bot_mood, user_sentiment)
-        response = self.llm_runner.generate(prompt, **properties)
-        response = self.process_chat_repsonse(response, self.botname)
-        return response
+    def send_user_message(self, action, message):
+        print("send_user_message", action, message)
+        print("send_user_message")
+        if action != "action":
+            self.add_user_message(message)
+        self.client.message = {
+            "action": "llm",
+            "type": action,
+            "data": {
+                "user_input": message,
+                "prompt": None,
+                "username": self.username,
+                "botname": self.botname,
+                "seed": self.seed,
+                "conversation": self,
+                "properties": self.properties,
+            }
+        }
+
+    def add_user_message(self, message):
+        self.add_message(self.username, message)
+
+    def send_user_is_dead_message(self):
+        self.response = {
+            "type": "action",
+            "botname": self.botname,
+            "response": f"{self.botname} is dead"
+        }
+
+    def get_user_reaction(self):
+        action_prompt = self.generate_reaction_prompt()
+        reaction = self.llm_runner.generate(
+            action_prompt,
+            seed=self.seed,
+            **self.properties,
+            return_result=True,
+            skip_special_tokens=True
+        )
+        return reaction
 
     def get_user_sentiment(self):
         properties = self.properties.copy()
@@ -526,6 +464,39 @@ class Conversation:
             skip_special_tokens=True
         )
         return sentiment_results
+
+    def add_bot_message(self, message):
+        self.add_message(self.botname, message)
+
+    def get_bot_mood_prompt(self):
+        return f"{self.premise()}\n{self.conversation_summary}\n\n{self.dialogue}\n\n{self.botname}'s mood is "
+
+    def generate_bot_response(self):
+        if self.do_summary:
+            self.summarize()
+        if not self.is_bot_alive:
+            self.send_user_is_dead_message()
+            return
+        bot_mood = self.get_bot_mood()
+        user_sentiment = self.get_user_sentiment()
+        bot_response = self.get_bot_response(bot_mood, user_sentiment)
+        self.add_bot_message(bot_response)
+
+    def get_bot_response(self, bot_mood: str, user_sentiment: str):
+        properties = self.properties.copy()
+        properties["top_k"] = 70
+        properties["top_p"] = 1.0
+        properties["num_beams"] = 8
+        properties["repetition_penalty"] = 100.0
+        properties["early_stopping"] = True
+        properties["max_length"] = 512
+        properties["min_length"] = 0
+        properties["temperature"] = 1.75
+        properties["skip_special_tokens"] = False
+        prompt = self.generate_response_prompt(bot_mood, user_sentiment)
+        response = self.llm_runner.generate(prompt, **properties)
+        response = self.process_chat_repsonse(response, self.botname)
+        return response
 
     def get_bot_mood(self):
         properties = self.properties.copy()
@@ -550,6 +521,10 @@ class Conversation:
         # lower
         mood = mood.lower()
         return mood
+
+    def format_bot_alive_prompt(self):
+        return self.generate_prompt(
+            f"{self.conversation_summary}\n\n{self.dialogue}<extra_id_0>Is {self.botname} still alive, yes or no? </s>")
 
     def is_bot_alive(self) -> bool:
         prompt = self.format_bot_alive_prompt()
