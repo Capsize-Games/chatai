@@ -163,11 +163,12 @@ class MainWindow(BaseWindow):
         max_length = self.ui.max_length_spinbox.value()
         if max_length < min_length:
             max_length = min_length
+        temperature = self.ui.temperature_spinbox.value() / 100
         return {
             "max_length": max_length,
             "min_length": min_length,
             "num_beams": num_beams,
-            "temperature": self.ui.temperature_spinbox.value(),
+            "temperature": temperature,
             "top_k": self.ui.top_k_spinbox.value(),
             "top_p": self.ui.top_p_spinbox.value(),
             "repetition_penalty": repetition_penalty,

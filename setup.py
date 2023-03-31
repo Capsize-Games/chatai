@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='chatairunner',
-    version='1.0.10',
+    version='1.0.11',
     author='Capsize LLC',
     description='Chat AI: A chatbot framework',
     long_description=open("README.md", "r", encoding="utf-8").read(),
