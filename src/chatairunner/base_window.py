@@ -91,11 +91,15 @@ class BaseWindow(QMainWindow):
 
     def generate(self):
         action = "generate"
-        userinput = " ".join([
-            self.ui.generated_text.toPlainText(),
-            self.ui.prefix.toPlainText(),
-            self.ui.prompt.toPlainText(),
+        userinput = "\n\n".join([
+            f"Rules:\n{self.ui.prefix.toPlainText()}",
+            f"History:\n{self.ui.generated_text.toPlainText()}",
+            f"User input:\n{self.ui.prompt.toPlainText()}",
         ])
+        # add prompt to generated_text
+        self.ui.generated_text.appendPlainText(self.ui.prompt.toPlainText())
+        # clear prompt
+        self.ui.prompt.setPlainText("")
         self.client.message = {
             "action": "llm",
             "type": action,
@@ -108,7 +112,6 @@ class BaseWindow(QMainWindow):
                 "properties": self.conversation.properties,
             }
         }
-        print(prompt)
 
     def start_progress_bar(self):
         self.ui.progressBar.setValue(0)
