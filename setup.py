@@ -16,6 +16,6 @@ setup(
     include_package_data=True,
     python_requires=">=3.10.0",
     install_requires=[
-        "aihandler==1.8.16",
+        "aihandler==1.8.17",
     ]
 )
