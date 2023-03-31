@@ -58,6 +58,46 @@ class Conversation:
     }
     properties = default_properties
 
+    @property
+    def response(self):
+        """
+        added for response setter - ignore
+        :return:
+        """
+        return None
+
+    @response.setter
+    def response(self, data: dict):
+        """
+        Sends data response to the llm_runner which handles processing for the client.
+        :param data:
+        :return:
+        """
+        self.llm_runner.set_message(data)
+
+    @property
+    def dialogue_length(self):
+        return len(self._dialogue)
+
+    @property
+    def do_summary(self):
+        # return self.dialogue_length >= self.summary_length
+        return False
+
+    @property
+    def dialogue(self):
+        formatted_messages = []
+        for message in self._dialogue:
+            if "action" in message:
+                formatted_messages.append(f"  {message['username']} {message['action']}")
+            else:
+                formatted_messages.append(f"{message['username']} says: \"{message['message']}\"")
+        return "\n".join(formatted_messages)
+
+    @dialogue.setter
+    def dialogue(self, dialogue):
+        self._dialogue = dialogue
+
     def __init__(self, client, **kwargs):
         """
         :param args:
@@ -77,7 +117,6 @@ class Conversation:
             self.__class__ = InterestingConversation
         elif conversation_type == "wild":
             self.__class__ = WildConversation
-
 
     def new_seed(self, seed: int = None):
         new_seed = seed
@@ -174,23 +213,6 @@ class Conversation:
             }
         }
 
-    @property
-    def response(self):
-        """
-        added for response setter - ignore
-        :return:
-        """
-        return None
-
-    @response.setter
-    def response(self, data: dict):
-        """
-        Sends data response to the llm_runner which handles processing for the client.
-        :param data:
-        :return:
-        """
-        self.llm_runner.set_message(data)
-
     def do_generate_characters(self):
         """
         This method is called from the client when the client processes a generate characters request.
@@ -246,15 +268,6 @@ class Conversation:
         # return summary
         return f"<extra_id_0>{self.dialogue} <extra_id_1>Summarize:"
 
-    @property
-    def dialogue_length(self):
-        return len(self._dialogue)
-
-    @property
-    def do_summary(self):
-        #return self.dialogue_length >= self.summary_length
-        return False
-
     def add_bot_action(self, action):
         self.add_action(self.botname, action)
 
@@ -307,20 +320,6 @@ class Conversation:
             "username": username,
             "response": f"{username} says: \"{message}\""
         }
-
-    @property
-    def dialogue(self):
-        formatted_messages = []
-        for message in self._dialogue:
-            if "action" in message:
-                formatted_messages.append(f"  {message['username']} {message['action']}")
-            else:
-                formatted_messages.append(f"{message['username']} says: \"{message['message']}\"")
-        return "\n".join(formatted_messages)
-
-    @dialogue.setter
-    def dialogue(self, dialogue):
-        self._dialogue = dialogue
 
     def update_summary(self, summary):
         self.conversation_summary = summary
@@ -551,7 +550,6 @@ class Conversation:
         # lower
         mood = mood.lower()
         return mood
-
 
     def is_bot_alive(self) -> bool:
         prompt = self.format_bot_alive_prompt()
