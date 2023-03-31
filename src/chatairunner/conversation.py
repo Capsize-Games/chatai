@@ -44,7 +44,7 @@ class Conversation:
         "<pad>",
         "<unk>"
     ]
-    settings = {
+    default_properties = {
         "max_length": 20,
         "min_length": 0,
         "num_beams": 1,
@@ -56,6 +56,47 @@ class Conversation:
         "no_repeat_ngram_size": 1,
         "num_return_sequences": 1,
     }
+    properties = default_properties
+
+    @property
+    def response(self):
+        """
+        added for response setter - ignore
+        :return:
+        """
+        return None
+
+    @response.setter
+    def response(self, data: dict):
+        """
+        Sends data response to the llm_runner which handles processing for the client.
+        :param data:
+        :return:
+        """
+        self.llm_runner.set_message(data)
+
+    @property
+    def dialogue_length(self):
+        return len(self._dialogue)
+
+    @property
+    def do_summary(self):
+        # return self.dialogue_length >= self.summary_length
+        return False
+
+    @property
+    def dialogue(self):
+        formatted_messages = []
+        for message in self._dialogue:
+            if "action" in message:
+                formatted_messages.append(f"  {message['username']} {message['action']}")
+            else:
+                formatted_messages.append(f"{message['username']} says: \"{message['message']}\"")
+        return "\n".join(formatted_messages)
+
+    @dialogue.setter
+    def dialogue(self, dialogue):
+        self._dialogue = dialogue
 
     def __init__(self, client, **kwargs):
         """
@@ -67,6 +108,7 @@ class Conversation:
         :keyword seed:int The seed for the random number generator
         :keyword properties:dict The properties for the model
         """
+        self.parent = kwargs.get("parent")
         threading.Thread(target=self._initialize, args=(client,), kwargs=kwargs).start()
         #self._initialize(client, **kwargs)  # Initialize the conversation
 
@@ -76,7 +118,6 @@ class Conversation:
         elif conversation_type == "wild":
             self.__class__ = WildConversation
 
-
     def new_seed(self, seed: int = None):
         new_seed = seed
         if not new_seed:
@@ -85,7 +126,6 @@ class Conversation:
                 new_seed = random.randint(0, 100000)
         self.seed = new_seed
         self.llm_runner.do_set_seed(self.seed)
-
 
     def _initialize(self, client=None, **kwargs):
         if client:
@@ -134,24 +174,25 @@ class Conversation:
     def load(self, filename: str):
         with open(filename, "r") as f:
             data = json.loads(f.read())
-            self.username.setText(data["username"])
-            self.botname.setText(data["botname"])
+            self.username = data["username"]
+            self.botname = data["botname"]
             self.dialogue = data["conversation"]
             self.new_seed(data["seed"])
             self.properties = data["properties"]
+            self.parent.update_form()
 
-    def prep_properties(self):
+    def prep_properties(self, properties):
         return {
-            "max_length": self.properties["max_length"],
-            "min_length": self.properties["min_length"],
-            "num_beams": self.properties["num_beams"],
-            "temperature": self.properties["temperature"],
-            "top_k": self.properties["top_k"],
-            "top_p": self.properties["top_p"],
-            "repetition_penalty": self.properties["repetition_penalty"],
-            "length_penalty": self.properties["length_penalty"],
-            "no_repeat_ngram_size": self.properties["no_repeat_ngram_size"],
-            "num_return_sequences": self.properties["num_return_sequences"],
+            "max_length": properties.get("max_length"),
+            "min_length": properties.get("min_length"),
+            "num_beams": properties.get("num_beams"),
+            "temperature": properties.get("temperature"),
+            "top_k": properties.get("top_k"),
+            "top_p": properties.get("top_p"),
+            "repetition_penalty": properties.get("repetition_penalty"),
+            "length_penalty": properties.get("length_penalty"),
+            "no_repeat_ngram_size": properties.get("no_repeat_ngram_size"),
+            "num_return_sequences": properties.get("num_return_sequences"),
             "model": self.model_name,
         }
 
@@ -167,27 +208,10 @@ class Conversation:
             "action": "llm",
             "type": "generate_characters",
             "data": {
-                "properties": self.prep_properties(),
+                "properties": self.prep_properties(self.default_properties),
                 "seed": self.seed
             }
         }
-
-    @property
-    def response(self):
-        """
-        added for response setter - ignore
-        :return:
-        """
-        return None
-
-    @response.setter
-    def response(self, data: dict):
-        """
-        Sends data response to the llm_runner which handles processing for the client.
-        :param data:
-        :return:
-        """
-        self.llm_runner.set_message(data)
 
     def do_generate_characters(self):
         """
@@ -244,15 +268,6 @@ class Conversation:
         # return summary
         return f"<extra_id_0>{self.dialogue} <extra_id_1>Summarize:"
 
-    @property
-    def dialogue_length(self):
-        return len(self._dialogue)
-
-    @property
-    def do_summary(self):
-        #return self.dialogue_length >= self.summary_length
-        return False
-
     def add_bot_action(self, action):
         self.add_action(self.botname, action)
 
@@ -306,20 +321,6 @@ class Conversation:
             "response": f"{username} says: \"{message}\""
         }
 
-    @property
-    def dialogue(self):
-        formatted_messages = []
-        for message in self._dialogue:
-            if "action" in message:
-                formatted_messages.append(f"  {message['username']} {message['action']}")
-            else:
-                formatted_messages.append(f"{message['username']} says: \"{message['message']}\"")
-        return "\n".join(formatted_messages)
-
-    @dialogue.setter
-    def dialogue(self, dialogue):
-        self._dialogue = dialogue
-
     def update_summary(self, summary):
         self.conversation_summary = summary
 
@@ -331,10 +332,10 @@ class Conversation:
         mood_segments = []
         if user_sentiment:
             sentiment_prompt = f"{self.username}'s sentiment is {user_sentiment}."
-            mood_segments.append(user_sentiment)
+            mood_segments.append(sentiment_prompt)
         if mood:
             mood_prompt = f"{self.botname} mood is {mood}."
-            mood_segments.append(mood)
+            mood_segments.append(mood_prompt)
         combined_sentiment_mood = " ".join(mood_segments)
         prompt_segments = [
             self.premise(),
@@ -342,7 +343,8 @@ class Conversation:
             combined_sentiment_mood,
             self.dialogue
         ]
-        return "\n\n".join([segment for segment in prompt_segments if segment])
+        prompt = "\n\n".join([segment for segment in prompt_segments if segment])
+        return prompt
 
     def generate_prompt(self, prompt, mood=None, user_sentiment=None, prefix="", suffix=""):
         """
@@ -358,28 +360,28 @@ class Conversation:
         return prompt
 
     def generate_response_prompt(self, mood, user_sentiment):
-        return self.generate_prompt(f"{self.botname} says", self.botname, self.username, mood, user_sentiment)
+        return self.generate_prompt(f"{self.botname} says", mood, user_sentiment)
 
     def generate_summary_prompt(self, mood, user_sentiment):
-        return self.generate_prompt(f"Generate a summary:", self.botname, self.username, mood, user_sentiment)
+        return self.generate_prompt(f"Generate a summary:", mood, user_sentiment)
 
     def generate_emotional_state_prompt(self, user, mood, user_sentiment):
-        return self.generate_prompt(f"What is the emotional state of {user}:", self.botname, self.username, mood, user_sentiment)
+        return self.generate_prompt(f"What is the emotional state of {user}:", mood, user_sentiment)
 
     def generate_mood_prompt(self, mood, user_sentiment):
-        return self.generate_prompt(f"What is the mood of {self.botname}:", self.botname, self.username, mood, user_sentiment)
+        return self.generate_prompt(f"What is the mood of {self.botname}:", mood, user_sentiment)
 
     def format_bot_alive_prompt(self):
-        return self.generate_prompt(f"{self.conversation_summary}\n\n{self.dialogue}<extra_id_0>Is {self.botname} still alive, yes or no? </s>", self.botname, self.username)
+        return self.generate_prompt(f"{self.conversation_summary}\n\n{self.dialogue}<extra_id_0>Is {self.botname} still alive, yes or no? </s>")
 
     def generate_sentiment_prompt(self, user, mood, user_sentiment):
-        return self.generate_prompt(f"What is the sentiment of {user}:", self.botname, self.username, mood, user_sentiment)
+        return self.generate_prompt(f"What is the sentiment of {user}:", mood, user_sentiment)
 
     def generate_reaction_prompt(self, mood=None, user_sentiment=None):
-        return self.generate_prompt(f"Describe what happens next", self.botname, self.username, mood, user_sentiment)
+        return self.generate_prompt(f"Describe what happens next", mood, user_sentiment)
 
     def generate_random_prompt(self, mood, user_sentiment):
-        return self.generate_prompt(f"Generate a random event:", self.botname, self.username, mood, user_sentiment)
+        return self.generate_prompt(f"Generate a random event:", mood, user_sentiment)
 
     def premise(self):
         # mean_bot = f"{self.botname} hates {self.username}. {self.botname} is very mean. {self.botname} uses sarcasm, rude responses, curse words and hate speech. Everything {self.botname} says is mean. {self.botname} is hateful."
@@ -549,7 +551,6 @@ class Conversation:
         mood = mood.lower()
         return mood
 
-
     def is_bot_alive(self) -> bool:
         prompt = self.format_bot_alive_prompt()
         results = self.llm_runner.generate(
@@ -576,7 +577,7 @@ class Conversation:
 
 
 class InterestingConversation(Conversation):
-    settings = {
+    properties = {
         "max_length": 512,
         "min_length": 0,
         "num_beams": 3,
@@ -591,7 +592,7 @@ class InterestingConversation(Conversation):
 
 
 class WildConversation(Conversation):
-    settings = {
+    properties = {
         "max_length": 512,
         "min_length": 0,
         "num_beams": 3,

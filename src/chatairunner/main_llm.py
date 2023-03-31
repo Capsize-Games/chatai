@@ -1,169 +1,12 @@
 import json
-import os
 import random
-from PyQt6 import uic
-from PyQt6.QtCore import pyqtSignal, pyqtSlot
-from PyQt6.QtWidgets import QFileDialog, QMainWindow
-from PyQt6.QtGui import QGuiApplication
-from aihandler.pyqt_offline_client import OfflineClient
+from PyQt6.QtCore import pyqtSlot
+from PyQt6.QtWidgets import QFileDialog
 from aihandler.settings import TEXT_MODELS
-from aihandler.llmrunner import LLMRunner
-from chatairunner.settings_manager import SettingsManager
-from aihandler.qtvar import TQDMVar, MessageHandlerVar, ErrorHandlerVar
-from chatairunner.conversation import ChatAIConversation
+from chatairunner.base_window import BaseWindow
 
 
-class LLMWindow(QMainWindow):
-    template = ""
-    runner = None
-    randomize_seed_on_generate = False
-    message_signal = pyqtSignal(str)
-    response_signal = pyqtSignal(dict)
-    client = None
-
-    def center(self):
-        availableGeometry = QGuiApplication.primaryScreen().availableGeometry()
-        frameGeometry = self.ui.frameGeometry()
-        frameGeometry.moveCenter(availableGeometry.center())
-        self.ui.move(frameGeometry.topLeft())
-
-    @pyqtSlot(str)
-    def message_received(self, message):
-        if message == "initialized":
-            self.enable_buttons()
-            self.stop_progress_bar()
-
-    def message_handler(self, *args, **kwargs):
-        response = args[0]["response"]["response"]
-        # remove <pad> tokens
-        response = response.replace("<pad>", "")
-        response = response.replace("<unk>", "")
-        # check if </s> token exists
-        incomplete = False
-        if "</s>" not in response:
-            # remove all tokens after </s> and </s> itself
-            incomplete = True
-        else:
-            response = response[: response.find("</s>")]
-
-        response = response.strip()
-        self.ui.generated_text.appendPlainText(response)
-
-        if incomplete:
-            # if there is no </s> token, the response is incomplete
-            # so we send another request
-            self.generate()
-        else:
-            self.stop_progress_bar()
-            self.enable_buttons()
-
-    def error_handler(self, *args, **kwargs):
-        self.ui.generated_text.appendPlainText(args[0])
-        self.stop_progress_bar()
-        self.enable_buttons()
-
-    def prep_prompt(self):
-        return ""
-
-    def prep_properties(self):
-        pass
-
-    def initialize_offline_client(self):
-        self.tqdm_var = TQDMVar()
-        self.message_var = MessageHandlerVar()
-        self.error_var = ErrorHandlerVar()
-        self.client = OfflineClient(
-            app=self,
-            tqdm_var=self.tqdm_var,
-            message_var=self.message_var,
-            error_var=self.error_var,
-            runners=[LLMRunner]
-        )
-
-    def handle_generate(self):
-        self.start_progress_bar()
-        self.disable_buttons()
-        self.generate()
-
-    def get_seed(self):
-        random_seed = self.ui.random_seed.isChecked()
-        seed = random.randint(0, 1000000) if random_seed else int(self.ui.seed.toPlainText())
-        self.ui.seed.setPlainText(str(seed))
-        return seed
-
-    def generate(self):
-        prompt = self.ui.generated_text.toPlainText()
-        action = "generate"
-        self.client.message = {
-            "action": "llm",
-            "type": action,
-            "data": {
-                "user_input": prompt,
-                "prompt": None,
-                "username": self.conversation.username,
-                "botname": self.conversation.botname,
-                "seed": self.seed,
-                "conversation": self,
-                "properties": self.conversation.properties,
-            }
-        }
-        print(prompt)
-
-    def start_progress_bar(self):
-        self.ui.progressBar.setValue(0)
-        self.ui.progressBar.setRange(0, 0)
-
-    def stop_progress_bar(self):
-        self.ui.progressBar.setRange(0, 100)
-        self.ui.progressBar.setValue(0)
-
-    def enable_buttons(self):
-        pass
-
-    def disable_buttons(self):
-        pass
-
-    @pyqtSlot(dict)
-    def process_response(self, response):
-        pass
-
-    def __init__(self, *args, **kwargs):
-        self.client = kwargs.pop("client")
-        self.parent = kwargs.pop("parent")
-        super().__init__(*args, **kwargs)
-        if self.client is None:
-            self.initialize_offline_client()
-        self.conversation = ChatAIConversation(client=self.client)
-        self.client.tqdm_var.my_signal.connect(self.tqdm_callback)
-        self.client.message_var.my_signal.connect(self.message_handler)
-        self.client.error_var.my_signal.connect(self.error_handler)
-        self.settings_manager = SettingsManager(app=self)
-        self.response_signal.connect(self.process_response)
-        self.message_signal.connect(self.message_received)
-        self.seed = random.randint(0, 100000)
-        self.load_template()
-        self.center()
-        self.ui.show()
-        self.ui.closeEvent = self.handle_quit
-        self.initialize_form()
-        # self.exec()
-
-    def handle_quit(self, *args, **kwargs):
-        pass
-
-    def initialize_form(self):
-        pass
-
-    def load_template(self):
-        HERE = os.path.dirname(os.path.abspath(__file__))
-        self.ui = uic.loadUi(os.path.join(HERE, f"pyqt/{self.template}.ui"))
-        # self.ui.setWindowIcon(QIcon('./assets/icon.png'))
-
-    def tqdm_callback(self, *args, **kwargs):
-        pass
-
-
-class MainWindow(LLMWindow):
+class MainWindow(BaseWindow):
     template = "main_window"
     chatbot_window = None
 
@@ -206,11 +49,7 @@ class MainWindow(LLMWindow):
         self.conversation.properties[value_name] = value
 
     def initialize_form(self):
-        # initialize sliders and spinboxes
-        # set default values
         self.set_form_defaults()
-
-        # integers first
         self.ui.max_length_slider.valueChanged.connect(lambda val: self.handle_value_change("max_length", val, "max_length_spinbox"))
         self.ui.max_length_spinbox.valueChanged.connect(lambda val: self.handle_value_change("max_length", val, "max_length_slider"))
         self.ui.min_length_slider.valueChanged.connect(lambda val: self.handle_value_change("min_length", val, "min_length_spinbox"))
@@ -223,8 +62,6 @@ class MainWindow(LLMWindow):
         self.ui.no_repeat_ngram_size_spinbox.valueChanged.connect(lambda val: self.handle_value_change("no_repeat_ngram_size", val, "no_repeat_ngram_size_slider"))
         self.ui.num_return_sequences_slider.valueChanged.connect(lambda val: self.handle_value_change("num_return_sequences", val, "num_return_sequences_spinbox"))
         self.ui.num_return_sequences_spinbox.valueChanged.connect(lambda val: self.handle_value_change("num_return_sequences", val, "num_return_sequences_slider"))
-
-        # now floats converting to int (1000 / 100 for float)
         self.ui.top_p_spinbox.valueChanged.connect(lambda val: self.handle_value_change("top_p", int(self.ui.top_p_spinbox.value() * 100), "top_p_slider"))
         self.ui.top_p_slider.valueChanged.connect(lambda val: self.handle_value_change("top_p", self.ui.top_p_slider.value() / 100, "top_p_spinbox"))
         self.ui.repetition_penalty_spinbox.valueChanged.connect(lambda val: self.handle_value_change("repetition_penalty", int(self.ui.repetition_penalty_spinbox.value() * 100), "repetition_penalty_slider"))
@@ -240,14 +77,16 @@ class MainWindow(LLMWindow):
         # on generate_button clicked
         self.ui.generate_button.clicked.connect(self.handle_generate)
 
+        # menu bar
         self.ui.actionNew.triggered.connect(self.handle_new)
         self.ui.actionSave.triggered.connect(self.handle_save)
         self.ui.actionLoad.triggered.connect(self.handle_load)
         self.ui.actionQuit.triggered.connect(self.handle_quit)
 
-        # iterate over MODELS dict
+        # mdoels dropdown
         for model_name, model_data in TEXT_MODELS.items():
             self.ui.model_dropdown.addItem(model_name)
+
         # set default to settings_manager.settings.model_name
         self.ui.model_dropdown.setCurrentText(self.settings_manager.settings.model_name.get())
 
@@ -278,7 +117,6 @@ class MainWindow(LLMWindow):
             # current values
             if filename.lower().endswith(".json"):
                 with open(filename, "rb") as f:
-                    # load properties
                     properties = json.load(f)
                     self.ui.max_length_spinbox.setValue(properties["max_length"])
                     self.ui.min_length_spinbox.setValue(properties["min_length"])

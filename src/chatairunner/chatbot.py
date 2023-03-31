@@ -4,11 +4,12 @@ import random
 from PyQt6 import uic
 from PyQt6.QtCore import pyqtSlot
 from PyQt6.QtWidgets import QFileDialog, QApplication
+
+from chatairunner.base_window import BaseWindow
 from chatairunner.conversation import Conversation
-from chatairunner.main_llm import LLMWindow
 
 
-class ChatbotWindow(LLMWindow):
+class ChatbotWindow(BaseWindow):
     template = "chatbot"
     chatbot_result_queue = queue.Queue()
     conversation: Conversation = None
@@ -55,8 +56,7 @@ class ChatbotWindow(LLMWindow):
 
     @staticmethod
     def advanced_settings():
-        HERE = os.path.dirname(os.path.abspath(__file__))
-        advanced_settings_window = uic.loadUi(os.path.join(HERE, "pyqt/advanced_settings.ui"))
+        advanced_settings_window = uic.loadUi("pyqt/advanced_settings.ui")
         advanced_settings_window.exec()
 
     def message_handler(self, *args, **kwargs):
@@ -80,6 +80,7 @@ class ChatbotWindow(LLMWindow):
     def initialize_form(self):
         self.conversation = Conversation(
             client=self.client,
+            parent=self,
             username=self.username,
             botname=self.botname,
             chat_type=self.chat_type
@@ -96,6 +97,13 @@ class ChatbotWindow(LLMWindow):
         self.ui.generated_text.setReadOnly(True)
         self.center()
         self.ui.show()
+
+    def update_form(self):
+        self.ui.username.setText(self.conversation.username)
+        self.ui.botname.setText(self.conversation.botname)
+        self.ui.generated_text.clear()
+        self.ui.generated_text.appendPlainText(self.conversation.dialogue)
+        self.ui.prompt.setFocus()
 
     def initialize_name_inputs(self):
         self.ui.username.textChanged.connect(
@@ -168,8 +176,7 @@ class ChatbotWindow(LLMWindow):
 
     def about(self):
         # display pyqt/about.ui popup window
-        HERE = os.path.dirname(os.path.abspath(__file__))
-        about_window = uic.loadUi(os.path.join(HERE, "pyqt/about.ui"))
+        about_window = uic.loadUi("pyqt/about.ui")
         about_window.setWindowTitle(f"About Chat AI")
         about_window.title.setText(f"Chat AI")
         about_window.exec()

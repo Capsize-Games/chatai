@@ -23,8 +23,7 @@ class Launcher(QApplication):
         self.ui.move(frameGeometry.topLeft())
 
     def load_template(self):
-        HERE = os.path.dirname(os.path.abspath(__file__))
-        self.ui = uic.loadUi(os.path.join(os.path.join(HERE, f"pyqt/home_window.ui")))
+        self.ui = uic.loadUi("pyqt/home_window.ui")
         self.ui.chatbot_button.clicked.connect(lambda _val, client=self.client: self.launch_chatbot(client))
         self.ui.textedit_button.clicked.connect(lambda _val, client=self.client: self.launch_textedit(client))
         self.ui.actionQuit.triggered.connect(self.quit)

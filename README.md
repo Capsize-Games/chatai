@@ -36,9 +36,22 @@ to and from an active Google T5-Flan model.
 Use this installation method if you intend to use Chat AI from the command line or with
 other python libraries or scripts.
 
-- `pip install chatairunner`
-- `pip install git+https://github.com/w4ffl35/diffusers.git@ckpt_fix`
-- `pip install git+https://github.com/w4ffl35/transformers.git@tensor_fix`
+Windows
+```
+pip install torch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 --index-url https://download.pytorch.org/whl/cu117
+pip install aihandlerwindows
+pip install https://github.com/w4ffl35/diffusers/archive/refs/tags/v0.14.0.ckpt_fix.tar.gz
+pip install https://github.com/w4ffl35/transformers/archive/refs/tags/tensor_fix-v1.0.2.tar.gz
+pip install https://github.com/acpopescu/bitsandbytes/releases/download/v0.37.2-win.0/bitsandbytes-0.37.2-py3-none-any.whl
+pip install chatai --no-deps
+```
+
+Linux
+```
+pip install https://github.com/w4ffl35/diffusers/archive/refs/tags/v0.14.0.ckpt_fix.tar.gz
+pip install https://github.com/w4ffl35/transformers/archive/refs/tags/tensor_fix-v1.0.2.tar.gz
+pip install chatairunner
+```
 
 #### Development installation
 
