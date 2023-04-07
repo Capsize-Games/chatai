@@ -71,7 +71,6 @@ COPY build.chatai.linux.prod.spec build.chatai.linux.prod.spec
 COPY linux.itch.toml linux.itch.toml
 COPY src/chatairunner/v1.yaml v1.yaml
 COPY src/chatairunner/v2.yaml v2.yaml
-COPY src/chatairunner/src/icons src/chatairunner/src/icons
 COPY src/chatairunner/pyqt src/chatairunner/pyqt
 RUN python3 -c "from accelerate.utils import write_basic_config; write_basic_config(mixed_precision='fp16')"
 RUN pip uninstall nvidia-cublas-cu11 -y
