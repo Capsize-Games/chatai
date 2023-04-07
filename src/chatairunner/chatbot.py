@@ -17,7 +17,6 @@ class ChatbotWindow(BaseWindow):
     model_name = "flan-t5-xl"
 
     def __init__(self, *args, **kwargs):
-        self.seed = random.randint(0, 1000000)
         super().__init__(*args, **kwargs)
 
     @property
@@ -71,7 +70,6 @@ class ChatbotWindow(BaseWindow):
         self.enable_buttons()
 
     def clear_prompt(self):
-        print("clear prompt")
         self.ui.prompt.clear()
 
     def tqdm_callback(self, *args, **kwargs):
@@ -193,7 +191,6 @@ class ChatbotWindow(BaseWindow):
     def generate_characters(self):
         self.disable_generate()
         self.conversation.send_generate_characters_message()
-        self.seed = self.conversation.seed
 
     def save_conversation(self):
         filename, _ = QFileDialog.getSaveFileName(
@@ -212,7 +209,6 @@ class ChatbotWindow(BaseWindow):
 
     def clear_conversation(self):
         self.conversation.reset()
-        self.seed = self.conversation.seed
         self.ui.generated_text.setPlainText("")
 
     def start_progress_bar(self):
