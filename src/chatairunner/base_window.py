@@ -31,23 +31,40 @@ class BaseWindow(QMainWindow):
             self.enable_buttons()
             self.stop_progress_bar()
 
-    def message_handler(self, *args, **kwargs):
-        response = args[0]["response"]["response"]
+    do_cancel_current = False
+
+    def handle_cancel(self):
+        # self.client.cancel_current_request()
+        self.do_cancel_current = True
+
+    def parse_response(self, response):
         # remove <pad> tokens
         response = response.replace("<pad>", "")
         response = response.replace("<unk>", "")
         # check if </s> token exists
         incomplete = False
-        if "</s>" not in response:
+        if not self.do_cancel_current:
             # remove all tokens after </s> and </s> itself
             incomplete = True
         else:
             response = response[: response.find("</s>")]
+        # response = response.strip()
+        self.do_cancel_current = False
+        return response, incomplete
 
-        response = response.strip()
+    def message_handler(self, *args, **kwargs):
+        response = args[0]["response"]["response"]
+        if isinstance(response, list):
+            # for now we limit to a single response
+            # TODO: add a way to select the response
+            response, incomplete = self.parse_response(response[0])
+        else:
+            response, incomplete = self.parse_response(response)
+
         self.ui.generated_text.appendPlainText(response)
-
-        if incomplete:
+        if response == "":
+            print("Response came back blank")
+        if incomplete and response != "":
             # if there is no </s> token, the response is incomplete
             # so we send another request
             self.generate()
@@ -79,6 +96,7 @@ class BaseWindow(QMainWindow):
         )
 
     def handle_generate(self):
+        self.do_cancel_current = False
         self.start_progress_bar()
         self.disable_buttons()
         self.generate()
@@ -91,15 +109,24 @@ class BaseWindow(QMainWindow):
 
     def generate(self):
         action = "generate"
-        userinput = "\n\n".join([
-            f"Rules:\n{self.ui.prefix.toPlainText()}",
-            f"History:\n{self.ui.generated_text.toPlainText()}",
-            f"User input:\n{self.ui.prompt.toPlainText()}",
-        ])
+        prefix = self.ui.prefix.toPlainText()
+        history = self.ui.generated_text.toPlainText()
+        prompt = self.ui.prompt.toPlainText()
+        input_text = []
+        if prefix != "":
+            input_text.append(prefix)
+        if history != "":
+            input_text.append(history)
+        if prompt != "":
+            input_text.append(prompt)
+        userinput = "\n\n".join(input_text)
         # add prompt to generated_text
         self.ui.generated_text.appendPlainText(self.ui.prompt.toPlainText())
         # clear prompt
         self.ui.prompt.setPlainText("")
+        seed = self.get_seed()
+        properties = self.conversation.properties
+        properties["seed"] = seed
         self.client.message = {
             "action": "llm",
             "type": action,
@@ -107,9 +134,8 @@ class BaseWindow(QMainWindow):
                 "user_input": userinput,
                 "username": self.conversation.username,
                 "botname": self.conversation.botname,
-                "seed": self.seed,
                 "conversation": self,
-                "properties": self.conversation.properties,
+                "properties": properties,
             }
         }
 
@@ -131,25 +157,26 @@ class BaseWindow(QMainWindow):
     def process_response(self, response):
         pass
 
+    seed = None
+
     def __init__(self, *args, **kwargs):
         self.client = kwargs.pop("client")
         self.parent = kwargs.pop("parent")
         super().__init__(*args, **kwargs)
         if self.client is None:
             self.initialize_offline_client()
-        self.conversation = ChatAIConversation(client=self.client)
         self.client.tqdm_var.my_signal.connect(self.tqdm_callback)
         self.client.message_var.my_signal.connect(self.message_handler)
         self.client.error_var.my_signal.connect(self.error_handler)
         self.settings_manager = SettingsManager(app=self)
         self.response_signal.connect(self.process_response)
         self.message_signal.connect(self.message_received)
-        self.seed = random.randint(0, 100000)
         self.load_template()
         self.center()
         self.ui.show()
         self.ui.closeEvent = self.handle_quit
         self.initialize_form()
+        self.conversation = ChatAIConversation(client=self.client, seed=self.seed)
         # self.exec()
 
     def handle_quit(self, *args, **kwargs):

@@ -30,11 +30,11 @@ character_prompts = [
 
 
 class Conversation:
+    llm_runner = None
     model_name = "flan-t5-xl"
     client: OfflineClient = None
     username: str = ""
     botname: str = ""
-    seed: int = 0
     properties: dict = {}
     conversation_summary: str = ""
     _dialogue: list = []
@@ -109,6 +109,7 @@ class Conversation:
         :keyword seed:int The seed for the random number generator
         :keyword properties:dict The properties for the model
         """
+        self.seed = kwargs.get("seed", random.randint(0, 100000))
         self.parent = kwargs.get("parent")
         threading.Thread(target=self._initialize, args=(client,), kwargs=kwargs).start()
         #self._initialize(client, **kwargs)  # Initialize the conversation
@@ -119,24 +120,17 @@ class Conversation:
         elif conversation_type == "wild":
             self.__class__ = WildConversation
 
-    def new_seed(self, seed: int = None):
-        new_seed = seed
-        if not new_seed:
-            new_seed = self.seed
-            while new_seed == self.seed:
-                new_seed = random.randint(0, 100000)
-        self.seed = new_seed
-        self.llm_runner.do_set_seed(self.seed)
-
     def _initialize(self, client=None, **kwargs):
         if client:
             self.client = client
+            self.seed = kwargs.get("seed", random.randint(0, 100000))
             client.llm_request_handler = self.request_handler
             self.llm_runner = LLMRunner(
                 app=client,
                 tqdm_var=client.tqdm_var,
                 image_var=client.image_var,
-                message_var=client.message_var
+                message_var=client.message_var,
+                seed=self.seed,
             )
         self.conversation_summary = ""
         self.username = kwargs.get("username", "User")
@@ -167,7 +161,6 @@ class Conversation:
                 "username": self.username,
                 "botname": self.botname,
                 "conversation": self._dialogue,
-                "seed": self.seed,
                 "properties": self.properties
             }
             f.write(json.dumps(data, indent=4))
@@ -178,7 +171,6 @@ class Conversation:
             self.username = data["username"]
             self.botname = data["botname"]
             self.dialogue = data["conversation"]
-            self.new_seed(data["seed"])
             self.properties = data["properties"]
             self.parent.update_form()
 
@@ -202,7 +194,6 @@ class Conversation:
         This method kicks of a generate characters request which is processed by the client.
         :return:
         """
-        self.new_seed()
         self.client.message = {
             "prompt": None,
             "user_input": None,
@@ -210,7 +201,6 @@ class Conversation:
             "type": "generate_characters",
             "data": {
                 "properties": self.prep_properties(self.default_properties),
-                "seed": self.seed
             }
         }
 
@@ -220,7 +210,6 @@ class Conversation:
         :return:
         """
         self.username = self.generate_character()
-        self.new_seed()
         self.botname = self.generate_character()
         self.response = {
             "type": "generate_characters",
@@ -240,7 +229,6 @@ class Conversation:
         properties["top_k"] = 40
         username = self.llm_runner.generate(
             prompt=prompt,
-            seed=self.seed,
             **properties,
             return_result=True,
             skip_special_tokens=True
@@ -358,7 +346,7 @@ class Conversation:
             self.do_generate_characters()
         else:
             properties = data["properties"]
-            properties["skip_special_tokens"] = kwargs.pop("skip_special_tokens", False)
+            properties["skip_special_tokens"] = kwargs.pop("skip_special_tokens", True)
             response = self.llm_runner.generate(
                 user_input,
                 **properties
@@ -409,8 +397,6 @@ class Conversation:
         return string
 
     def send_user_message(self, action, message):
-        print("send_user_message", action, message)
-        print("send_user_message")
         if action != "action":
             self.add_user_message(message)
         self.client.message = {
@@ -421,7 +407,6 @@ class Conversation:
                 "prompt": None,
                 "username": self.username,
                 "botname": self.botname,
-                "seed": self.seed,
                 "conversation": self,
                 "properties": self.properties,
             }
@@ -441,7 +426,6 @@ class Conversation:
         action_prompt = self.generate_reaction_prompt()
         reaction = self.llm_runner.generate(
             action_prompt,
-            seed=self.seed,
             **self.properties,
             return_result=True,
             skip_special_tokens=True
@@ -458,7 +442,6 @@ class Conversation:
         sentiment_prompt = self.format_user_sentiment_prompt()
         sentiment_results = self.llm_runner.generate(
             sentiment_prompt,
-            seed=self.seed,
             **properties,
             return_result=True,
             skip_special_tokens=True
@@ -492,7 +475,7 @@ class Conversation:
         properties["max_length"] = 512
         properties["min_length"] = 0
         properties["temperature"] = 1.75
-        properties["skip_special_tokens"] = False
+        properties["skip_special_tokens"] = True
         prompt = self.generate_response_prompt(bot_mood, user_sentiment)
         response = self.llm_runner.generate(prompt, **properties)
         response = self.process_chat_repsonse(response, self.botname)
@@ -508,7 +491,6 @@ class Conversation:
         mood_prompt = self.get_bot_mood_prompt()
         mood_results = self.llm_runner.generate(
             prompt=mood_prompt,
-            seed=self.seed,
             **properties,
             return_result=True,
             skip_special_tokens=True
@@ -530,20 +512,17 @@ class Conversation:
         prompt = self.format_bot_alive_prompt()
         results = self.llm_runner.generate(
             prompt=prompt,
-            seed=self.seed,
             **self.properties,
             return_result=True,
             skip_special_tokens=True
         )
         bot_alive = results
         bot_alive = bot_alive.strip()
-        print("IS BOT ALIVE: ", bot_alive)
         return bot_alive != "no"
 
     def summarize(self):
         results = self.llm_runner.generate(
             prompt=self.summary_prompt(),
-            seed=self.seed,
             **self.properties,
             return_result=True,
             skip_special_tokens=True)
@@ -594,7 +573,7 @@ class ChatAIConversation(Conversation):
         data = kwargs.get("data", {})
         user_input = data.get("user_input", None)
         properties = data["properties"]
-        properties["skip_special_tokens"] = kwargs.pop("skip_special_tokens", False)
+        properties["skip_special_tokens"] = kwargs.pop("skip_special_tokens", True)
         response = self.llm_runner.generate(
             user_input,
             **properties
@@ -607,4 +586,3 @@ class ChatAIConversation(Conversation):
     def send_user_message(self, action, message):
         if action != "action":
             self.add_user_message(message)
-        print("setting client message")
