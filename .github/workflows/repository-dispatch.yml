@@ -6,14 +6,14 @@ on:
   workflow_dispatch:
 
 env:
-  DOCKER_IMAGE: ghcr.io/capsize-games/chatai/chatai:linux
+  DOCKER_IMAGE: ghcr.io/capsize-games/chatairunner/chatairunner:linux
   BUTLER_API_KEY: ${{ secrets.BUTLER_API_KEY }}
   CR_PAT: ${{ secrets.CR_PAT }}
   CR_REPO: ${{ secrets.CR_REPO }}
   CR_USERNAME: ${{ secrets.CR_USERNAME }}
 
 jobs:
-  run-chatai:
+  run-chatairunner:
     runs-on: ubuntu-latest
     steps:
       - name: Login to GitHub Container Registry
@@ -22,7 +22,7 @@ jobs:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.CR_PAT }}
-      - name: Run chatai on Linux
+      - name: Run chatairunner on Linux
         run: |
           docker pull $DOCKER_IMAGE
           docker run --rm \
@@ -36,4 +36,4 @@ jobs:
             -e DISABLE_TELEMETRY=1 \
             -e TCL_LIBDIR_PATH=/usr/lib/x86_64-linux-gnu/ \
             -e TK_LIBDIR_PATH=/usr/lib/x86_64-linux-gnu/ \
-            ghcr.io/capsize-games/chatai/chatai:linux bash build.sh
+            ghcr.io/capsize-games/chatairunner/chatairunner:linux bash build.sh

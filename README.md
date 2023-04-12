@@ -42,12 +42,12 @@ to and from an active Google T5-Flan model.
 
 Linux
 ```
-docker pull ghcr.io/capsize-games/chatai/chatai:linux
+docker pull ghcr.io/capsize-games/chatairunner/chatairunner:linux
 ```
 
 Windows
 ```
-docker pull ghcr.io/capsize-games/chatai/chatai:windows
+docker pull ghcr.io/capsize-games/chatairunner/chatairunner:windows
 ```
 
 **Build Docker**
@@ -55,15 +55,15 @@ docker pull ghcr.io/capsize-games/chatai/chatai:windows
 Linux
 ```
 docker-compose -f docker-compose.yml build
-docker tag ghcr.io/capsize-games/chatai/chatai:linux ghcr.io/capsize-games/chatai/chatai:linux
-docker push ghcr.io/capsize-games/chatai/chatai:linux
+docker tag ghcr.io/capsize-games/chatairunner/chatairunner:linux ghcr.io/capsize-games/chatairunner/chatairunner:linux
+docker push ghcr.io/capsize-games/chatairunner/chatairunner:linux
 ```
 
 Windows
 ```
 docker-compose -f docker-compose.windows.yml build
-docker tag ghcr.io/capsize-games/chatai/chatai:linux ghcr.io/capsize-games/chatai/chatai:windows
-docker push ghcr.io/capsize-games/chatai/chatai:windows
+docker tag ghcr.io/capsize-games/chatairunner/chatairunner:linux ghcr.io/capsize-games/chatairunner/chatairunner:windows
+docker push ghcr.io/capsize-games/chatairunner/chatairunner:windows
 ```
 
 **Run the app using Docker**

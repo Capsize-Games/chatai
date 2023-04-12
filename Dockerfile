@@ -67,7 +67,7 @@ RUN ln -s /usr/share/tcltk/tcl8.6 /usr/share/tcltk/tcl8
 FROM fix_tcl as install_apps
 COPY build.sh build.sh
 COPY build.py build.py
-COPY build.chatai.linux.prod.spec build.chatai.linux.prod.spec
+COPY build.chatairunner.linux.prod.spec build.chatai.linux.prod.spec
 COPY linux.itch.toml linux.itch.toml
 COPY src/chatairunner/v1.yaml v1.yaml
 COPY src/chatairunner/v2.yaml v2.yaml
