@@ -1,38 +1,27 @@
 # -*- mode: python ; coding: utf-8 -*-
 import os
+import sys ; sys.setrecursionlimit(sys.getrecursionlimit() * 5)
 import shutil
 from PyInstaller.utils.hooks import copy_metadata, collect_data_files
-import sys ; sys.setrecursionlimit(sys.getrecursionlimit() * 5)
 os.environ["CHATAIRUNNER_ENVIRONMENT"] = "prod"
-libraries = [
-    "/usr/local/lib/python3.10/dist-packages/PyQt6/Qt6/lib/",
-    "/usr/lib/x86_64-linux-gnu/wine-development/",
-    "/usr/local/lib/python3.10/dist-packages/h5py.libs/",
-    "/usr/local/lib/python3.10/dist-packages/scipy.libs/",
-    "/usr/local/lib/python3.10/dist-packages/tokenizers.libs/",
-    "/usr/local/lib/python3.10/dist-packages/Pillow.libs/",
-    "/usr/local/lib/python3.10/dist-packages/opencv_python.libs/",
-    "/usr/local/lib/python3.10/dist-packages/torchaudio/lib/",
-    "/usr/local/lib/python3.10/dist-packages/torch/lib/",
-    "/usr/lib/python3.10",
-    "/usr/lib/x86_64-linux-gnu/",
-    "/usr/local/lib/",
-    "/usr/local/lib/python3.10",
-    "/usr/local/lib/python3.10/dist-packages"
-]
-os.environ["LD_LIBRARY_PATH"] = ":".join(libraries)
+os.environ["DEV_ENV"] = "0"
+os.environ["PYTHONOPTIMIZE"] = "0"
 block_cipher = None
+ROOT = "Z:\\app\\"
+DIST = "./dist/chatairunner"
+os.environ["CHATAIRUNNER_ENVIRONMENT"] = "prod"
 DEBUGGING = True
-EXCLUDE_BINARIES = True
+EXCLUDE_BINARIES = False
 EXE_NAME = "chatairunner"  # used when creating a binary instead of a folder
 EXE_STRIP = False
-EXE_UPX = True
+EXE_UPX = False
 EXE_RUNTIME_TMP_DIR = None
 COLLECT_NAME = 'chatairunner'
 COLLECT_STRIP = False
-COLLECT_UPX = True
+COLLECT_UPX = False
+
 datas = []
-datas += copy_metadata('aihandler')
+datas += copy_metadata('aihandlerwindows')
 datas += copy_metadata('tqdm')
 datas += copy_metadata('regex')
 datas += copy_metadata('requests')
@@ -42,47 +31,57 @@ datas += copy_metadata('numpy')
 datas += copy_metadata('tokenizers')
 datas += copy_metadata('transformers')
 datas += copy_metadata('rich')
+datas += copy_metadata('tensorflow')
+datas += copy_metadata('scipy')
 datas += collect_data_files("torch", include_py_files=True)
 datas += collect_data_files("torchvision", include_py_files=True)
-datas += collect_data_files("JIT", include_py_files=True)
-datas += collect_data_files("triton", include_py_files=True)
 datas += collect_data_files("pytorch_lightning", include_py_files=True)
 datas += collect_data_files("lightning_fabric", include_py_files=True)
 datas += collect_data_files("transformers", include_py_files=True)
 datas += collect_data_files("xformers", include_py_files=True)
+datas += collect_data_files("tensorflow", include_py_files=True)
+
 a = Analysis(
     [
-        f'./chatairunner/src/chatairunner/main.py',
+        f'{ROOT}chatairunner\\src\\chatairunner\\main.py',
     ],
     pathex=[
-        "/usr/local/lib/python3.10/dist-packages/",
-        "/usr/local/lib/python3.10/dist-packages/torch/lib",
-        "/usr/local/lib/python3.10/dist-packages/tokenizers",
-        "/usr/local/lib/python3.10/dist-packages/tensorflow",
-        "/usr/local/lib/python3.10/dist-packages/triton",
-        "/usr/local/lib/python3.10/dist-packages/xformers",
-        "/usr/local/lib/python3.10/dist-packages/xformers/triton",
-        "/usr/lib/x86_64-linux-gnu/",
+        "C:\\Python310\\Lib\\site-packages",
+        "C:\\Python310\\Lib\\site-packages\\tokenizers",
+        "C:\\Python310\\Lib\\site-packages\\tensorflow_io_gcs_filesystem\\core\\python\\ops",
+        "C:\\Python310\\Lib\\site-packages\\bitsandbytes\\",
+        "C:\\Python310\\Lib\\site-packages\\tensorflow\\python\\data\\experimental\\service\\",
+        "C:\\Python310\\Lib\\site-packages\\torch\\lib",
+        "C:\\Python310\\Lib\\site-packages\\PyQt6",
+        "C:\\Users\\root\\AppData\\Local\\Programs\\Python\\Python310\\Lib\\site-packages\\tensorflow\\python\\data\\experimental\\service\\",
+        "C:\\Python310\\Lib\\site-packages\\xformers\\",
+        "C:\\Users\\root\\AppData\\Local\\Programs\\Python\\Python310\\",
     ],
     binaries=[
-        ('/usr/local/lib/python3.10/dist-packages/nvidia/cudnn/lib/libcudnn_ops_infer.so.8', '.'),
-        ('/usr/local/lib/python3.10/dist-packages/nvidia/cudnn/lib/libcudnn_cnn_infer.so.8', '.'),
+        ("C:\\Python310\\Lib\\site-packages\\torchvision\\cudart64_110.dll", "."),
+        ("C:\\Python310\\tcl\\tk8.6\\demos\\text.tcl", "."),
+        ("C:\\Python310\\tcl\\tk8.6\\ttk\\fonts.tcl", "."),
+        ("C:\\Python310\\tcl\\tk8.6\\ttk\\utils.tcl", "."),
+        ("C:\\Python310\\tcl\\tk8.6\\ttk\\cursors.tcl", "."),
+        ("C:\\Python310\\DLLs\\tcl86t.dll", "."),
+        ("C:\\Python310\\DLLs\\tk86t.dll", "."),
+        ("C:\\Python310\\vcruntime140.dll", "."),
+        ("C:\\Python310\\vcruntime140_1.dll", "."),
+        ("C:\\Python310\\tcl\\tcl8.6\\tzdata", "."),
+        ("C:\\windows\\syswow64\\msvcp140.dll", "."),
+        ("C:\\api-ms-win-shcore-scaling-l1-1-1.dll", "."),
+        ("C:\\Python310\\Lib\\site-packages\\tensorflow\\python\\util\\_pywrap_utils.pyd", "."),
     ],
     datas=datas,
     hiddenimports=[
         "aihandler",
-        "JIT",
-        "triton",
-        "triton._C",
-        "triton._C.libtriton",
+        "chatairunner",
+        "accelerate",
         "xformers",
         "xformers.ops",
-        "xformers.triton",
-        "xformers.triton.softmax",
         "tqdm",
         "diffusers",
         "transformers",
-        "nvidia",
         "torch",
         "torchvision",
         "torchvision.io",
@@ -99,8 +98,8 @@ a = Analysis(
         "psutil",
         "matplotlib",
         "bitsandbytes",
-        "numpy",
         "PIL._tkinter_finder",
+        "scipy",
     ],
     hookspath=[],
     hooksconfig={},
@@ -113,7 +112,6 @@ a = Analysis(
         "antlr4-python3-runtime",
         "anyio",
         "arrow",
-        "astunparse",
         "async-timeout",
         "attrs",
         "beautifulsoup4",
@@ -134,9 +132,7 @@ a = Analysis(
         # "einops",
         "email-validator",
         "fastapi",
-        "flatbuffers",
         "frozenlist",
-        "gast",
         "google-auth",
         "google-auth-oauthlib",
         "google-pasta",
@@ -197,7 +193,6 @@ a = Analysis(
         "rfc3986",
         "rsa",
         "SecretStorage",
-        "six",
         "sniffio",
         "soupsieve",
         "starlette",
@@ -208,7 +203,6 @@ a = Analysis(
         "tensorboard-plugin-wit",
         "tensorflow-estimator",
         "tensorflow-io-gcs-filesystem",
-        "termcolor",
         "torchaudio",
         "torchvision",
         "traitlets",
@@ -223,7 +217,6 @@ a = Analysis(
         "websocket-client",
         "websockets",
         "Werkzeug",
-        "wrapt",
         "yarl",
         "zipp",
     ],
@@ -241,13 +234,17 @@ exe = EXE(
     pyz,
     a.scripts,
     [],
-    exclude_binaries=EXCLUDE_BINARIES,
     name=EXE_NAME,
     debug=DEBUGGING,
+    bootloader_ignore_signals=False,
     strip=EXE_STRIP,
     upx=EXE_UPX,
-    runtime_tmpdir=EXE_RUNTIME_TMP_DIR,
-    console=DEBUGGING
+    console=DEBUGGING,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
 )
 coll = COLLECT(
     exe,
@@ -257,36 +254,20 @@ coll = COLLECT(
     strip=COLLECT_STRIP,
     upx=COLLECT_UPX,
     upx_exclude=[],
-    name=COLLECT_NAME
+    name=COLLECT_NAME,
+    onefile=False,
+    onedir=True,
+    upx_dir="C:\\Python310\\Scripts\\"
 )
-
-# copy files for distribution
-shutil.copytree('./src/chatairunner/pyqt', './dist/chatairunner/pyqt')
-shutil.copyfile('./linux.itch.toml', './dist/chatairunner/.itch.toml')
-shutil.copytree('./src/chatairunner/src/icons', './dist/chatairunner/src/icons')
-
-# copy sd config files
-os.makedirs('./dist/chatairunner/diffusers/pipelines/stable_diffusion', exist_ok=True)
-shutil.copyfile('./v1.yaml', './dist/chatairunner/v1.yaml')
-shutil.copyfile('./v2.yaml', './dist/chatairunner/v2.yaml')
-
-#############################################################
-#### The following fixes are for Triton #####################
-
-# run compileall on ./dist/chatairunner/triton/runtime/jit.py and then mv ./dist/chatairunner/triton/runtime/__pycache__/jit.cpython-310.pyc to ./dist/chatairunner/triton/runtime/jit.pyc
-shutil.move(
-    '/usr/local/lib/python3.10/dist-packages/triton/runtime/__pycache__/jit.cpython-310.pyc',
-    './dist/chatairunner/triton/runtime/jit.pyc'
+shutil.copytree(
+    f'{ROOT}/chatairunner/src/chatairunner/pyqt',
+    f'{DIST}/pyqt'
 )
-
-# do the same thing for ./dist/chatairunner/triton/compiler.py
-shutil.move(
-    '/usr/local/lib/python3.10/dist-packages/triton/__pycache__/compiler.cpython-310.pyc',
-    './dist/chatairunner/triton/compiler.pyc'
+shutil.copyfile(
+    f'{ROOT}/windows.itch.toml',
+    f'{DIST}/.itch.toml'
 )
-
-for file in [ "random" ]:
-    shutil.move(
-        f'/usr/local/lib/python3.10/dist-packages/JIT/__pycache__/{file}.cpython-310.pyc',
-        f'./dist/chatairunner/{file}.pyc'
-    )
+shutil.copytree(
+    f'{ROOT}/chatairunner/src/chatairunner/src/icons',
+    f'{DIST}/src/icons'
+)

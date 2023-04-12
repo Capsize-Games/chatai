@@ -1,4 +1,5 @@
 [![Banner](banner.png)](https://capsizegames.itch.io/chat-ai)
+[![Linux Build](https://github.com/Capsize-Games/chatai/actions/workflows/repository-dispatch.yml/badge.svg)](https://github.com/Capsize-Games/chatai/actions/workflows/repository-dispatch.yml)
 [![Upload Python Package](https://github.com/Capsize-Games/chatai/actions/workflows/python-publish.yml/badge.svg)](https://github.com/Capsize-Games/chatai/actions/workflows/python-publish.yml)
 [![Discord](https://img.shields.io/discord/839511291466219541?color=5865F2&logo=discord&logoColor=white)](https://discord.gg/PUVDDCJ7gz)
 ![GitHub](https://img.shields.io/github/license/Capsize-Games/chatai)
@@ -41,12 +42,12 @@ to and from an active Google T5-Flan model.
 
 Linux
 ```
-docker pull ghcr.io/capsize-games/chatai/chatai:linux
+docker pull ghcr.io/capsize-games/chatairunner/chatairunner:linux
 ```
 
 Windows
 ```
-docker pull ghcr.io/capsize-games/chatai/chatai:windows
+docker pull ghcr.io/capsize-games/chatairunner/chatairunner:windows
 ```
 
 **Build Docker**
@@ -54,15 +55,15 @@ docker pull ghcr.io/capsize-games/chatai/chatai:windows
 Linux
 ```
 docker-compose -f docker-compose.yml build
-docker tag ghcr.io/capsize-games/chatai/chatai:linux ghcr.io/capsize-games/chatai/chatai:linux
-docker push ghcr.io/capsize-games/chatai/chatai:linux
+docker tag ghcr.io/capsize-games/chatairunner/chatairunner:linux ghcr.io/capsize-games/chatairunner/chatairunner:linux
+docker push ghcr.io/capsize-games/chatairunner/chatairunner:linux
 ```
 
 Windows
 ```
 docker-compose -f docker-compose.windows.yml build
-docker tag ghcr.io/capsize-games/chatai/chatai:linux ghcr.io/capsize-games/chatai/chatai:windows
-docker push ghcr.io/capsize-games/chatai/chatai:windows
+docker tag ghcr.io/capsize-games/chatairunner/chatairunner:linux ghcr.io/capsize-games/chatairunner/chatairunner:windows
+docker push ghcr.io/capsize-games/chatairunner/chatairunner:windows
 ```
 
 **Run the app using Docker**

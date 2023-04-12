@@ -1,8 +1,10 @@
 from setuptools import setup, find_packages
 
+from airunner.version import VERSION
+
 setup(
     name='chatairunner',
-    version='1.1.0',
+    version=VERSION,
     author='Capsize LLC',
     description='Chat AI: A chatbot framework',
     long_description=open("README.md", "r", encoding="utf-8").read(),
