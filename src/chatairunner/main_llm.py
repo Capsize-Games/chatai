@@ -46,6 +46,10 @@ class MainWindow(BaseWindow):
 
     def handle_value_change(self, value_name, value, widget_name):
         self.ui.__getattribute__(widget_name).setValue(value)
+        # change ints to floats
+        if value_name in ["top_p", "temperature", "repetition_penalty", "length_penalty"]:
+            if type(value) == int:
+                value = value / 100
         self.conversation.properties[value_name] = value
 
     def initialize_form(self):
@@ -71,6 +75,10 @@ class MainWindow(BaseWindow):
         self.ui.length_penalty_slider.valueChanged.connect(lambda val: self.handle_value_change("length_penalty", self.ui.length_penalty_slider.value() / 100, "length_penalty_spinbox"))
         self.ui.length_penalty_spinbox.valueChanged.connect(lambda val: self.handle_value_change("length_penalty", int(self.ui.length_penalty_spinbox.value() * 100), "length_penalty_slider"))
 
+        # initialize cancel and clear buttons
+        self.ui.cancelButton.clicked.connect(self.handle_cancel)
+        self.ui.clearButton.clicked.connect(self.handle_clear)
+
         # set a random seed in seed text box
         self.ui.seed.setPlainText(str(random.randint(0, 1000000)))
 
@@ -91,6 +99,11 @@ class MainWindow(BaseWindow):
         self.ui.model_dropdown.setCurrentText(self.settings_manager.settings.model_name.get())
 
         self.ui.setWindowTitle("Chat AI")
+
+        self.seed = int(self.ui.seed.toPlainText())
+
+    def handle_clear(self):
+        self.ui.generated_text.setPlainText("")
 
     def disable_generate_button(self):
         self.ui.generate_button.setEnabled(False)
@@ -130,6 +143,8 @@ class MainWindow(BaseWindow):
                     self.ui.length_penalty_spinbox.setValue(properties["length_penalty"])
                     self.ui.seed.setPlainText(properties["seed"])
                     self.ui.generated_text.setPlainText(properties["generated_text"])
+                    self.ui.prefix.setPlainText(properties["prefix"])
+                    self.ui.prompt.setPlainText(properties["prompt"])
 
     def handle_save(self):
         # display a save dialogue for .txtrunner and .llmrunner files
@@ -141,41 +156,14 @@ class MainWindow(BaseWindow):
                 filename += ".json"
             with open(filename, "w") as f:
                 # save properties
-                properties = self.prep_properties()
+                properties = self.conversation.properties
                 properties["seed"] = self.ui.seed.toPlainText()
                 # set prompt and few shot prompt
                 # set generated text
                 properties["generated_text"] = self.ui.generated_text.toPlainText()
+                properties["prefix"] = self.ui.prefix.toPlainText()
+                properties["prompt"] = self.ui.prompt.toPlainText()
                 json.dump(properties, f)
-
-    def prep_properties(self):
-        num_beams = self.ui.num_beams_spinbox.value()
-        if num_beams == 0:
-            num_beams = None
-        repetition_penalty = self.ui.repetition_penalty_spinbox.value()
-        if repetition_penalty == 0.0:
-            repetition_penalty = 0.01
-        top_p = self.ui.top_p_spinbox.value()
-        top_p_min = 0.01
-        if top_p <= top_p_min:
-            top_p = top_p_min
-        min_length = self.ui.min_length_spinbox.value()
-        max_length = self.ui.max_length_spinbox.value()
-        if max_length < min_length:
-            max_length = min_length
-        return {
-            "max_length": max_length,
-            "min_length": min_length,
-            "num_beams": num_beams,
-            "temperature": self.ui.temperature_spinbox.value(),
-            "top_k": self.ui.top_k_spinbox.value(),
-            "top_p": self.ui.top_p_spinbox.value(),
-            "repetition_penalty": repetition_penalty,
-            "length_penalty": self.ui.length_penalty_spinbox.value(),
-            "no_repeat_ngram_size": self.ui.no_repeat_ngram_size_spinbox.value(),
-            "num_return_sequences": self.ui.num_return_sequences_spinbox.value(),
-            "model": self.ui.model_dropdown.currentText(),
-        }
 
 
 if __name__ == '__main__':
