@@ -92,7 +92,8 @@ class BaseWindow(QMainWindow):
             tqdm_var=self.tqdm_var,
             message_var=self.message_var,
             error_var=self.error_var,
-            runners=[LLMRunner]
+            runners=[LLMRunner],
+            load_extensions=False
         )
 
     def handle_generate(self):
@@ -176,8 +177,6 @@ class BaseWindow(QMainWindow):
         self.ui.show()
         self.ui.closeEvent = self.handle_quit
         self.initialize_form()
-        self.conversation = ChatAIConversation(client=self.client, seed=self.seed)
-        # self.exec()
 
     def handle_quit(self, *args, **kwargs):
         pass

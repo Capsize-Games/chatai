@@ -111,6 +111,7 @@ class Conversation:
         """
         self.seed = kwargs.get("seed", random.randint(0, 100000))
         self.parent = kwargs.get("parent")
+        self.settings_manager = kwargs.get("settings_manager")
         threading.Thread(target=self._initialize, args=(client,), kwargs=kwargs).start()
         #self._initialize(client, **kwargs)  # Initialize the conversation
 
@@ -131,6 +132,8 @@ class Conversation:
                 image_var=client.image_var,
                 message_var=client.message_var,
                 seed=self.seed,
+                settings_manager=kwargs.get("settings_manager"),
+                load_extensions=False,
             )
         self.conversation_summary = ""
         self.username = kwargs.get("username", "User")
@@ -562,11 +565,13 @@ class WildConversation(Conversation):
 
 class ChatAIConversation(Conversation):
     def __init__(self, **kwargs):
+        self.settings_manager = kwargs.get("settings_manager")
         super().__init__(
             client=kwargs.get("client"),
             username=None,
             botname="ChatAI",
             seed=kwargs.get("seed"),
+            settings_manager=self.settings_manager
         )
 
     def handle_request(self, **kwargs):
@@ -582,7 +587,3 @@ class ChatAIConversation(Conversation):
             "type": "response",
             "response": response
         })
-
-    def send_user_message(self, action, message):
-        if action != "action":
-            self.add_user_message(message)

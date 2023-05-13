@@ -13,10 +13,17 @@ class ChatbotWindow(BaseWindow):
     template = "chatbot"
     chatbot_result_queue = queue.Queue()
     conversation: Conversation = None
-    chat_type = "interesting"
+    chat_type = "normal"
     model_name = "flan-t5-xl"
+    debugger = None
 
     def __init__(self, *args, **kwargs):
+        debugging = kwargs.pop("debugging", False)
+        if debugging:
+            HERE = os.path.dirname(os.path.abspath(__file__))
+            print(os.path.join(HERE, "pyqt/pyqt_chatbot.ui"))
+            self.debugger = uic.loadUi(os.path.join(HERE, "pyqt/chat_debug.ui"))
+            self.debugger.show()
         super().__init__(*args, **kwargs)
 
     @property
@@ -246,7 +253,7 @@ if __name__ == '__main__':
     class Runner(QApplication):
         def __init__(self, args):
             super().__init__(args)
-            self.main_window = ChatbotWindow(client=None, parent=self)
+            self.main_window = ChatbotWindow(client=None, parent=self, debugging=True)
             self.exec()
 
         def show(self):
